@@ -382,9 +382,16 @@ def backtest_new_challengers(db):
         else:
             db.execute(
                 """UPDATE tournament_models
-                   SET stage = 'retired', retired_at = ?, retire_reason = 'backtest_failed'
+                   SET stage = 'retired', retired_at = ?, retire_reason = 'backtest_failed',
+                       bt_trades = ?, bt_pf = ?, bt_precision = ?, bt_pnl = ?, bt_ci_lower = ?
                    WHERE model_id = ?""",
-                (now_ms, model_id),
+                (
+                    now_ms,
+                    result.get("bt_trades"), result.get("bt_pf"),
+                    result.get("bt_precision"), result.get("bt_pnl"),
+                    result.get("bt_ci_lower"),
+                    model_id,
+                ),
             )
             log.info("backtest FAILED %s → retired", model_id)
 

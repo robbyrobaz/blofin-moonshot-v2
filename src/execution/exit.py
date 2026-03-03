@@ -27,15 +27,16 @@ def get_current_price(db: sqlite3.Connection, symbol: str) -> float | None:
 
 
 def compute_pnl_pct(entry_price: float, exit_price: float, direction: str) -> float:
-    """Compute PnL percentage for a trade.
+    """Compute PnL percentage for a trade, including leverage.
 
-    Long:  (exit - entry) / entry
-    Short: (entry - exit) / entry
+    Long:  (exit - entry) / entry * LEVERAGE
+    Short: (entry - exit) / entry * LEVERAGE
     """
+    import config as _config
     if direction == "long":
-        return (exit_price - entry_price) / entry_price
+        return (exit_price - entry_price) / entry_price * _config.LEVERAGE
     else:
-        return (entry_price - exit_price) / entry_price
+        return (entry_price - exit_price) / entry_price * _config.LEVERAGE
 
 
 def update_high_water(

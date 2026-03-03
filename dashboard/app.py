@@ -97,6 +97,19 @@ def _load_leaderboard(conn):
     return _safe_query(conn, sql)
 
 
+def _load_top_challengers(conn):
+    """Top 10 retired challengers by bt_pf — shows tournament activity even with no champion."""
+    sql = """
+        SELECT model_id, direction, model_type, bt_pf, bt_precision,
+               bt_trades, bt_pnl, retire_reason, created_at
+        FROM tournament_models
+        WHERE stage = 'retired' AND bt_pf IS NOT NULL
+        ORDER BY bt_pf DESC
+        LIMIT 10
+    """
+    return _safe_query(conn, sql)
+
+
 def _load_champion_history(conn):
     sql = """
         SELECT model_id, direction, promoted_to_champion_at, retired_at,
@@ -310,6 +323,7 @@ def index():
 
     try:
         leaderboard = _load_leaderboard(conn)
+        top_challengers = _load_top_challengers(conn)
         champion_history = _load_champion_history(conn)
         open_positions = _load_open_positions(conn)
         recent_closes = _load_recent_closes(conn)
@@ -374,6 +388,7 @@ def index():
         ctx = {
             "refresh_seconds": config.DASHBOARD_REFRESH_SECONDS,
             "leaderboard": leaderboard,
+            "top_challengers": top_challengers,
             "champion_history": champion_history,
             "open_positions": open_pos_data,
             "recent_closes": recent_closes,
@@ -400,6 +415,7 @@ def _empty_ctx():
     return {
         "refresh_seconds": config.DASHBOARD_REFRESH_SECONDS,
         "leaderboard": [],
+        "top_challengers": [],
         "champion_history": [],
         "open_positions": [],
         "recent_closes": [],
@@ -722,7 +738,41 @@ tr:hover td { background: rgba(15,52,96,0.35); }
     </table>
     </div>
     {% else %}
-    <div class="empty">No tournament models yet.</div>
+    <div class="empty">No active FT/champion models yet — see Top Challengers below.</div>
+    {% endif %}
+</div>
+
+<!-- ── 1b. Top Challengers (best retired models) ─────────────────────── -->
+<div class="card full-width">
+    <h2>Top 10 Challengers <small style="font-size:0.75em;color:#888">(best backtest scores, gate not yet cleared)</small></h2>
+    {% if top_challengers %}
+    <div class="tbl-wrap">
+    <table>
+    <thead><tr>
+        <th>Model</th><th>Dir</th><th>Type</th>
+        <th>BT PF</th><th>BT Prec</th><th>BT Trades</th><th>BT PnL</th>
+        <th>Gate PF ≥ {{ config.MIN_BT_PF }}</th><th>Age</th>
+    </tr></thead>
+    <tbody>
+    {% for m in top_challengers %}
+    {% set passes_pf = m['bt_pf'] is not none and m['bt_pf'] >= config.MIN_BT_PF %}
+    <tr>
+        <td><span class="{{ 'green' if passes_pf else 'yellow' }}">{{ truncate(m['model_id']) }}</span></td>
+        <td><span class="badge badge-{{ m['direction'] or 'long' }}">{{ m['direction'] or '—' }}</span></td>
+        <td>{{ m['model_type'] or '—' }}</td>
+        <td class="{{ 'green' if passes_pf else 'red' }}"><b>{{ fmt_float(m['bt_pf'], 2) }}</b></td>
+        <td>{{ fmt_pct(m['bt_precision'] * 100 if m['bt_precision'] else None, 1) }}</td>
+        <td>{{ m['bt_trades'] or '—' }}</td>
+        <td class="{{ 'green' if (m['bt_pnl'] or 0) >= 0 else 'red' }}">{{ fmt_pct(m['bt_pnl'], 2) if m['bt_pnl'] is not none else '—' }}</td>
+        <td>{{ '<span class="green">✓</span>' | safe if passes_pf else '<span class="red">✗</span>' | safe }}</td>
+        <td>{{ age_days(m['created_at']) }}d</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div class="empty">No backtest results yet — first cycle still running.</div>
     {% endif %}
 </div>
 

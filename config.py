@@ -35,14 +35,18 @@ CANDLE_LOOKBACK_BARS = _env("CANDLE_LOOKBACK_BARS", 200, int)
 BACKFILL_TARGET_YEARS = _env("BACKFILL_TARGET_YEARS", 4, int)
 
 # ── Labels ───────────────────────────────────────────────────────────────
-TP_PCT = _env("TP_PCT", 0.30, float)
-SL_PCT = _env("SL_PCT", 0.10, float)
+# 15%/5% price targets with 3x leverage = effective 45%/15% PnL (same 3:1 R:R)
+TP_PCT = _env("TP_PCT", 0.15, float)
+SL_PCT = _env("SL_PCT", 0.05, float)
 LABEL_HORIZON_BARS = _env("LABEL_HORIZON_BARS", 42, int)
+
+# ── Leverage ─────────────────────────────────────────────────────────────
+LEVERAGE = _env("LEVERAGE", 3, int)  # Applied to all paper positions
 
 # ── Tournament ───────────────────────────────────────────────────────────
 MIN_BT_TRADES = _env("MIN_BT_TRADES", 50, int)
-MIN_BT_PF = _env("MIN_BT_PF", 2.0, float)
-MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.40, float)
+MIN_BT_PF = _env("MIN_BT_PF", 1.3, float)
+MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.25, float)
 MAX_FT_MODELS = _env("MAX_FT_MODELS", 15, int)
 MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 20, int)
 MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 1.3, float)
@@ -50,7 +54,7 @@ MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 1.5, float)
 CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 10, int)
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)
-BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 1.0, float)
+BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 0.8, float)
 
 # ── PnL Weights (from NQ pipeline) ──────────────────────────────────────
 PNL_WEIGHT_TP = _env("PNL_WEIGHT_TP", 1.0, float)

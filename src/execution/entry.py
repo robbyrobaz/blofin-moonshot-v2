@@ -190,8 +190,8 @@ def score_and_enter(
                 """INSERT INTO positions
                    (symbol, direction, model_id, is_champion_trade,
                     entry_ts, entry_price, entry_ml_score, entry_features,
-                    high_water_price, status, size_usd)
-                   VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, 'open', ?)""",
+                    high_water_price, status, size_usd, leverage)
+                   VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, 'open', ?, ?)""",
                 (
                     symbol,
                     direction,
@@ -202,6 +202,7 @@ def score_and_enter(
                     entry_features_json,
                     entry_price,  # high_water_price starts at entry
                     size_usd,
+                    config.LEVERAGE,
                 ),
             )
 

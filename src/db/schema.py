@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS positions (
     exit_ts INTEGER,
     exit_price REAL,
     exit_reason TEXT,
+    leverage INTEGER DEFAULT 1,
     pnl_pct REAL,
     high_water_price REAL,
     trailing_active INTEGER DEFAULT 0,
