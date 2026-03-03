@@ -22,6 +22,23 @@ from config import (
 from src.tournament.challenger import FEATURE_SUBSETS
 
 
+# ---------------------------------------------------------------------------
+# GPU Detection
+# ---------------------------------------------------------------------------
+
+def _detect_xgb_gpu_device():
+    """Detect GPU availability for XGBoost and return device string."""
+    try:
+        from xgboost import XGBClassifier
+        m = XGBClassifier(device='cuda', n_estimators=1)
+        m.fit(np.array([[1, 2], [3, 4]]), np.array([0, 1]))
+        return 'cuda'
+    except Exception:
+        return 'cpu'
+
+XGB_DEVICE = _detect_xgb_gpu_device()
+
+
 def _build_model(params: dict):
     """Instantiate an untrained model from params."""
     mt = params["model_type"]
@@ -38,6 +55,7 @@ def _build_model(params: dict):
             num_leaves=params.get("num_leaves", 31),
             max_depth=depth,
             class_weight={0: 1, 1: neg_w},
+            device="gpu",
             verbosity=-1,
             n_jobs=-1,
         )
@@ -48,6 +66,8 @@ def _build_model(params: dict):
             learning_rate=lr,
             max_depth=depth,
             scale_pos_weight=neg_w,
+            tree_method="hist",
+            device=XGB_DEVICE,
             use_label_encoder=False,
             eval_metric="logloss",
             verbosity=0,
@@ -60,6 +80,8 @@ def _build_model(params: dict):
             learning_rate=lr,
             depth=min(depth, 10),
             class_weights={0: 1, 1: neg_w},
+            task_type="GPU",
+            devices="0",
             verbose=0,
         )
     else:
