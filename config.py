@@ -45,9 +45,9 @@ LEVERAGE = _env("LEVERAGE", 3, int)  # Applied to all paper positions
 
 # ── Tournament ───────────────────────────────────────────────────────────
 MIN_BT_TRADES = _env("MIN_BT_TRADES", 50, int)
-MIN_BT_PF = _env("MIN_BT_PF", 1.3, float)
-MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.25, float)
-MAX_FT_MODELS = _env("MAX_FT_MODELS", 15, int)
+MIN_BT_PF = _env("MIN_BT_PF", 2.0, float)
+MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.40, float)
+MAX_FT_MODELS = _env("MAX_FT_MODELS", 10, int)
 MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 20, int)
 MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 1.3, float)
 MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 1.5, float)
@@ -61,8 +61,8 @@ PNL_WEIGHT_TP = _env("PNL_WEIGHT_TP", 1.0, float)
 PNL_WEIGHT_SL = _env("PNL_WEIGHT_SL", 0.50, float)  # (SL/TP) × 1.5 = 0.5
 
 # ── Execution ────────────────────────────────────────────────────────────
-MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 5, int)
-MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 5, int)
+MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 3, int)
+MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 3, int)
 BASE_POSITION_PCT = _env("BASE_POSITION_PCT", 0.02, float)
 NEW_LISTING_BOOST = _env("NEW_LISTING_BOOST", 1.5, float)
 NEW_LISTING_DAYS = _env("NEW_LISTING_DAYS", 30, int)
@@ -72,7 +72,8 @@ TRAIL_ACTIVATE_PCT = _env("TRAIL_ACTIVATE_PCT", 0.20, float)
 TRAIL_DISTANCE_PCT = _env("TRAIL_DISTANCE_PCT", 0.10, float)
 INVALIDATION_GRACE_BARS = _env("INVALIDATION_GRACE_BARS", 2, int)
 PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)
-TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 5, int)
+TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 2, int)
+ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.70, float)
 
 # ── Regime ───────────────────────────────────────────────────────────────
 BEAR_THRESHOLD = _env("BEAR_THRESHOLD", -0.20, float)

@@ -87,11 +87,14 @@ def _make_model_id(params: dict) -> str:
     return hashlib.sha256(blob).hexdigest()[:12]
 
 
-def _sample_params() -> dict:
+def _sample_params(forced_direction: str | None = None) -> dict:
     """Sample one random challenger configuration."""
     params = {}
     for key, choices in PARAM_SPACE.items():
-        params[key] = random.choice(choices)
+        if key == "direction" and forced_direction is not None:
+            params[key] = forced_direction
+        else:
+            params[key] = random.choice(choices)
     params["feature_set"] = random.choice(list(FEATURE_SUBSETS.keys()))
     return params
 
@@ -111,11 +114,15 @@ def generate_challengers(db, n: int = None) -> list[dict]:
     now_ms = int(time.time() * 1000)
     created = []
 
-    for _ in range(n * 3):  # oversample to account for duplicates
+    # Force directional balance per cycle to avoid short-only drift.
+    target_dirs = (["long", "short"] * ((n + 1) // 2))[:n]
+
+    for i in range(n * 4):  # oversample to account for duplicates
         if len(created) >= n:
             break
 
-        params = _sample_params()
+        forced_direction = target_dirs[len(created)] if len(created) < len(target_dirs) else None
+        params = _sample_params(forced_direction=forced_direction)
         model_id = _make_model_id(params)
 
         # Check if already exists

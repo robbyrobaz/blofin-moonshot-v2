@@ -110,7 +110,10 @@ def score_and_enter(
         model = champion["model"]
         model_id = champion["model_id"]
         feature_set = champion["feature_set"]
-        entry_threshold = champion["entry_threshold"]
+        entry_threshold = max(
+            float(champion["entry_threshold"]),
+            float(config.ENTRY_THRESHOLD_FLOOR),
+        )
 
         # Compute features and score all symbols
         scored = []
@@ -186,25 +189,30 @@ def score_and_enter(
             entry_features_json = json.dumps(signal["features"])
 
             # INSERT position
-            db.execute(
-                """INSERT INTO positions
-                   (symbol, direction, model_id, is_champion_trade,
-                    entry_ts, entry_price, entry_ml_score, entry_features,
-                    high_water_price, status, size_usd, leverage)
-                   VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, 'open', ?, ?)""",
-                (
-                    symbol,
-                    direction,
-                    model_id,
-                    ts_ms,
-                    entry_price,
-                    signal["score"],
-                    entry_features_json,
-                    entry_price,  # high_water_price starts at entry
-                    size_usd,
-                    config.LEVERAGE,
-                ),
-            )
+            try:
+                db.execute(
+                    """INSERT INTO positions
+                       (symbol, direction, model_id, is_champion_trade,
+                        entry_ts, entry_price, entry_ml_score, entry_features,
+                        high_water_price, status, size_usd, leverage)
+                       VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, 'open', ?, ?)""",
+                    (
+                        symbol,
+                        direction,
+                        model_id,
+                        ts_ms,
+                        entry_price,
+                        signal["score"],
+                        entry_features_json,
+                        entry_price,  # high_water_price starts at entry
+                        size_usd,
+                        config.LEVERAGE,
+                    ),
+                )
+            except sqlite3.IntegrityError:
+                # Open position already exists for symbol+direction (unique-open invariant)
+                log.debug("score_and_enter: duplicate open prevented for %s %s", direction, symbol)
+                continue
 
             result_key = f"entries_{direction}"
             result[result_key] += 1

@@ -15,6 +15,7 @@ import sys
 import time
 import traceback
 from pathlib import Path
+import fcntl
 
 # Ensure project root is on sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -26,6 +27,15 @@ from src.db.schema import init_db, get_db
 
 def run_cycle():
     """Execute one complete 4h cycle."""
+    lock_path = Path(config.DB_PATH).with_suffix('.cycle.lock')
+    lock_fh = open(lock_path, 'w')
+    try:
+        fcntl.flock(lock_fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        log.warning("Another moonshot cycle is already running; skipping this trigger")
+        lock_fh.close()
+        return False
+
     db = get_db()
     ts_ms = int(time.time() * 1000)
     errors = []
@@ -240,6 +250,8 @@ def run_cycle():
         "═══ Cycle %d done in %.1fs — %d errors ═══",
         run_id, duration_s, len(errors),
     )
+    fcntl.flock(lock_fh.fileno(), fcntl.LOCK_UN)
+    lock_fh.close()
     return len(errors) == 0
 
 

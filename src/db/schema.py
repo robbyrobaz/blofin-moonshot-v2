@@ -155,6 +155,9 @@ CREATE TABLE IF NOT EXISTS positions (
 );
 CREATE INDEX IF NOT EXISTS idx_positions_model ON positions(model_id, status);
 CREATE INDEX IF NOT EXISTS idx_positions_symbol ON positions(symbol, status);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_positions_unique_open
+    ON positions(symbol, direction)
+    WHERE status = 'open';
 
 -- ── Per-coin model confidence ───────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS coin_model_confidence (
@@ -193,11 +196,11 @@ CREATE TABLE IF NOT EXISTS runs (
 def get_db(db_path=None) -> sqlite3.Connection:
     """Get a SQLite connection with WAL mode and row factory."""
     path = str(db_path or DB_PATH)
-    conn = sqlite3.connect(path, timeout=30)
+    conn = sqlite3.connect(path, timeout=120)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     conn.execute("PRAGMA foreign_keys=ON")
-    conn.execute("PRAGMA busy_timeout=30000")
+    conn.execute("PRAGMA busy_timeout=120000")
     conn.row_factory = sqlite3.Row
     return conn
 
