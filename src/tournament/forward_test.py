@@ -1,6 +1,7 @@
 """Moonshot v2 — Forward test arena: score coins & track per-model PnL."""
 
 import json
+import sqlite3
 import time
 
 import joblib
@@ -354,14 +355,18 @@ def score_forward_test_models(db, all_symbols: list[str], ts_ms: int):
             if price is None:
                 continue
 
-            db.execute(
-                """INSERT INTO positions
-                   (symbol, direction, model_id, is_champion_trade,
-                    entry_ts, entry_price, entry_ml_score, status,
-                    high_water_price)
-                   VALUES (?, ?, ?, 0, ?, ?, ?, 'open', ?)""",
-                (symbol, direction, model_id, now_ms, price, score, price),
-            )
+            try:
+                db.execute(
+                    """INSERT INTO positions
+                       (symbol, direction, model_id, is_champion_trade,
+                        entry_ts, entry_price, entry_ml_score, status,
+                        high_water_price)
+                       VALUES (?, ?, ?, 0, ?, ?, ?, 'open', ?)""",
+                    (symbol, direction, model_id, now_ms, price, score, price),
+                )
+            except sqlite3.IntegrityError:
+                log.debug("FT open skipped: duplicate open for %s %s", direction, symbol)
+                continue
             log.info("FT open %s %s %s score=%.3f price=%.6f",
                      model_id, direction, symbol, score, price)
 
