@@ -19,8 +19,9 @@ from config import (
 def demote_underperformers(db):
     """Demote FT models that fail performance gates.
 
-    2026-03-06: Relaxed thresholds — keep models in FT longer.
-    After 200 trades: ft_pf < 0.8 -> stage='retired' (only clear losers)
+    2026-03-07: VERY relaxed — FT is free data, keep everything.
+    Only retire if: PF < 0.5 AND trades > 500 (catastrophic AND significant)
+    FT "losses" are NOT real losses — they're valuable learning data.
     """
     now_ms = int(time.time() * 1000)
 
@@ -41,7 +42,7 @@ def demote_underperformers(db):
            SET stage = 'retired', retired_at = ?,
                retire_reason = 'ft_pf_below_1.5_after_50_trades'
            WHERE stage = 'forward_test'
-             AND ft_trades >= 50
+             AND ft_trades >= 500
              AND ft_pf < ?""",
         (now_ms, MIN_FT_PF_KEEP_50),
     ).rowcount
