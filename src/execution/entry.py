@@ -14,6 +14,35 @@ from config import log
 from src.features.compute import compute_features
 
 
+def _get_symbol_whitelist(db: sqlite3.Connection) -> set[str]:
+    """Build symbol whitelist from manual config + profitable trade history."""
+    manual_symbols = set(config.SYMBOL_WHITELIST)
+    min_trades = int(config.SYMBOL_WHITELIST_MIN_TRADES)
+    rows = db.execute(
+        """SELECT symbol
+           FROM positions
+           WHERE status = 'closed' AND pnl_pct IS NOT NULL
+           GROUP BY symbol
+           HAVING SUM(pnl_pct) > 0 AND COUNT(*) >= ?""",
+        (min_trades,),
+    ).fetchall()
+    auto_symbols = {r["symbol"] for r in rows}
+    whitelist = manual_symbols | auto_symbols
+    if whitelist:
+        log.info(
+            "score_and_enter: symbol whitelist size=%d (auto=%d manual=%d min_trades=%d)",
+            len(whitelist),
+            len(auto_symbols),
+            len(manual_symbols),
+            min_trades,
+        )
+    else:
+        log.warning(
+            "score_and_enter: symbol whitelist empty; trading all active symbols"
+        )
+    return whitelist
+
+
 def _get_active_symbols(db: sqlite3.Connection) -> list[dict]:
     """Return all active coins with their metadata."""
     rows = db.execute(
@@ -62,19 +91,59 @@ def _get_confidence_multiplier(db: sqlite3.Connection, symbol: str, model_id: st
     return row["confidence_multiplier"] if row else 1.0
 
 
-def _compute_position_size(days_since_listing: int | None, confidence_mult: float) -> float:
+def _get_symbol_ft_pnl_ranks(db: sqlite3.Connection, direction: str) -> dict[str, int]:
+    """Rank symbols by cumulative closed champion-trade pnl_pct (best first)."""
+    rows = db.execute(
+        """SELECT symbol, SUM(pnl_pct) AS ft_pnl
+           FROM positions
+           WHERE status = 'closed'
+             AND is_champion_trade = 1
+             AND direction = ?
+             AND pnl_pct IS NOT NULL
+           GROUP BY symbol
+           ORDER BY ft_pnl DESC""",
+        (direction,),
+    ).fetchall()
+    return {row["symbol"]: i + 1 for i, row in enumerate(rows)}
+
+
+def _get_symbol_rank_multiplier(symbol: str, rank_map: dict[str, int], top_n: int = 3) -> float:
+    """Map symbol FT rank into top/middle/bottom sizing tiers."""
+    if symbol not in rank_map:
+        return 1.0
+
+    rank = rank_map[symbol]
+    total = len(rank_map)
+    if rank <= top_n:
+        return 1.5
+
+    # For small universes, prefer top-tier over bottom-tier overlap.
+    bottom_start_rank = max(top_n + 1, total - top_n + 1)
+    if rank >= bottom_start_rank:
+        return 0.75
+    return 1.0
+
+
+def _compute_position_size(
+    days_since_listing: int | None,
+    confidence_mult: float,
+    symbol_mult: float,
+) -> float:
     """Compute position size in USD.
 
     base_size = PAPER_ACCOUNT_SIZE * BASE_POSITION_PCT  (2% = $2000)
     new_listing_boost applied if coin listed < NEW_LISTING_DAYS ago
-    final_size = base_size * new_listing_boost * confidence_mult
+    final_size = base_size * symbol_mult * new_listing_boost * confidence_mult
+    safety cap = PAPER_ACCOUNT_SIZE * MAX_POSITION_PCT
     """
     base_size = config.PAPER_ACCOUNT_SIZE * config.BASE_POSITION_PCT
     if days_since_listing is not None and days_since_listing < config.NEW_LISTING_DAYS:
         boost = config.NEW_LISTING_BOOST
     else:
         boost = 1.0
-    return base_size * boost * confidence_mult
+    raw_size = base_size * symbol_mult * boost * confidence_mult
+    size_cap = config.PAPER_ACCOUNT_SIZE * config.MAX_POSITION_PCT
+    return min(raw_size, size_cap)
 
 
 def score_and_enter(
@@ -98,7 +167,15 @@ def score_and_enter(
         dict with {entries_long: int, entries_short: int, coins_scored: int}
     """
     symbols = _get_active_symbols(db)
-    result = {"entries_long": 0, "entries_short": 0, "coins_scored": len(symbols)}
+    whitelist = _get_symbol_whitelist(db)
+    symbols_to_score = (
+        [coin for coin in symbols if coin["symbol"] in whitelist] if whitelist else symbols
+    )
+    result = {
+        "entries_long": 0,
+        "entries_short": 0,
+        "coins_scored": len(symbols_to_score),
+    }
 
     directions = []
     if long_champion is not None and regime != "bear":
@@ -107,6 +184,7 @@ def score_and_enter(
         directions.append(("short", short_champion, config.MAX_SHORT_POSITIONS))
 
     for direction, champion, max_positions in directions:
+        symbol_rank_map = _get_symbol_ft_pnl_ranks(db, direction)
         model = champion["model"]
         model_id = champion["model_id"]
         feature_set = champion["feature_set"]
@@ -117,7 +195,7 @@ def score_and_enter(
 
         # Compute features and score all symbols
         scored = []
-        for coin in symbols:
+        for coin in symbols_to_score:
             symbol = coin["symbol"]
             try:
                 features = compute_features(
@@ -181,8 +259,9 @@ def score_and_enter(
                 continue
 
             # Compute position size
+            symbol_mult = _get_symbol_rank_multiplier(symbol, symbol_rank_map, top_n=3)
             size_usd = _compute_position_size(
-                signal["days_since_listing"], confidence_mult
+                signal["days_since_listing"], confidence_mult, symbol_mult
             )
 
             # Snapshot entry features as JSON
@@ -217,12 +296,13 @@ def score_and_enter(
             result_key = f"entries_{direction}"
             result[result_key] += 1
             log.info(
-                "ENTRY %s %s @ %.6f  score=%.3f  size=$%.0f",
+                "ENTRY %s %s @ %.6f  score=%.3f  size=$%.0f  symbol_mult=%.2f",
                 direction.upper(),
                 symbol,
                 entry_price,
                 signal["score"],
                 size_usd,
+                symbol_mult,
             )
 
     db.commit()

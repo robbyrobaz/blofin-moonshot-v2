@@ -16,6 +16,16 @@ def _env(key: str, default, cast=None):
     return type(default)(val)
 
 
+def _env_csv(key: str, default: list[str] | None = None) -> list[str]:
+    """Read comma-separated env var into uppercase, trimmed symbol list."""
+    if default is None:
+        default = []
+    raw = os.environ.get(f"MOONSHOT_{key}", None)
+    if raw is None:
+        return default
+    return [part.strip().upper() for part in raw.split(",") if part.strip()]
+
+
 # ── Paths ────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "data" / "moonshot_v2.db"
@@ -66,6 +76,7 @@ PNL_WEIGHT_SL = _env("PNL_WEIGHT_SL", 0.50, float)  # (SL/TP) × 1.5 = 0.5
 MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 3, int)
 MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 3, int)
 BASE_POSITION_PCT = _env("BASE_POSITION_PCT", 0.02, float)
+MAX_POSITION_PCT = _env("MAX_POSITION_PCT", 0.05, float)
 NEW_LISTING_BOOST = _env("NEW_LISTING_BOOST", 1.5, float)
 NEW_LISTING_DAYS = _env("NEW_LISTING_DAYS", 30, int)
 TIME_STOP_DAYS = _env("TIME_STOP_DAYS", 7, int)
@@ -76,6 +87,8 @@ INVALIDATION_GRACE_BARS = _env("INVALIDATION_GRACE_BARS", 2, int)
 PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)
 TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 2, int)
 ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.70, float)
+SYMBOL_WHITELIST = _env_csv("SYMBOL_WHITELIST", [])
+SYMBOL_WHITELIST_MIN_TRADES = _env("SYMBOL_WHITELIST_MIN_TRADES", 20, int)
 
 # ── Regime ───────────────────────────────────────────────────────────────
 BEAR_THRESHOLD = _env("BEAR_THRESHOLD", -0.20, float)
