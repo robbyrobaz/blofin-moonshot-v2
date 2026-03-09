@@ -145,35 +145,43 @@ def crown_champion_if_ready(db):
 def load_champions(db) -> tuple:
     """Load current long and short champion models.
 
-    Returns (long_model, short_model) or (None, None).
-    Each model is loaded from the champion pickle path.
+    Returns (long_champ_dict, short_champ_dict) or (None, None).
+    Each dict contains: model_id, model, ft_pnl, ft_trades, ft_pf, direction.
+    The 'model' key holds the actual loaded classifier object.
     """
-    long_model = None
-    short_model = None
+    results = {}
 
-    if CHAMPION_LONG_PATH.exists():
+    for direction, pkl_path in [("long", CHAMPION_LONG_PATH), ("short", CHAMPION_SHORT_PATH)]:
+        row = db.execute(
+            "SELECT model_id, ft_pnl, ft_trades, ft_pf, entry_threshold, invalidation_threshold "
+            "FROM tournament_models WHERE stage = 'champion' AND direction = ?",
+            (direction,),
+        ).fetchone()
+
+        if row is None or not pkl_path.exists():
+            results[direction] = None
+            continue
+
         try:
-            long_model = joblib.load(CHAMPION_LONG_PATH)
+            model = joblib.load(pkl_path)
         except Exception as e:
-            log.error("load_champions: failed to load long champion: %s", e)
+            log.error("load_champions: failed to load %s champion: %s", direction, e)
+            results[direction] = None
+            continue
 
-    if CHAMPION_SHORT_PATH.exists():
-        try:
-            short_model = joblib.load(CHAMPION_SHORT_PATH)
-        except Exception as e:
-            log.error("load_champions: failed to load short champion: %s", e)
+        champ = {
+            "model_id": row["model_id"],
+            "model": model,
+            "ft_pnl": row["ft_pnl"],
+            "ft_trades": row["ft_trades"],
+            "ft_pf": row["ft_pf"],
+            "entry_threshold": row["entry_threshold"],
+            "invalidation_threshold": row["invalidation_threshold"],
+            "direction": direction,
+        }
+        log.info("champion %s: %s pnl=%.2f%% trades=%d pf=%.2f",
+                 direction, row["model_id"][:12], row["ft_pnl"] or 0,
+                 row["ft_trades"] or 0, row["ft_pf"] or 0)
+        results[direction] = champ
 
-    # Log champion info
-    for direction, model in [("long", long_model), ("short", short_model)]:
-        if model is not None:
-            row = db.execute(
-                "SELECT model_id, ft_pnl, ft_trades, ft_pf FROM tournament_models "
-                "WHERE stage = 'champion' AND direction = ?",
-                (direction,),
-            ).fetchone()
-            if row:
-                log.info("champion %s: %s pnl=%.2f%% trades=%d pf=%.2f",
-                         direction, row["model_id"][:12], row["ft_pnl"],
-                         row["ft_trades"], row["ft_pf"] or 0)
-
-    return (long_model, short_model)
+    return (results.get("long"), results.get("short"))
