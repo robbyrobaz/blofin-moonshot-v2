@@ -10,6 +10,7 @@ Missing data -> neutral fill. Never crashes.
 import hashlib
 import json
 import math
+import sqlite3
 import time
 from functools import lru_cache
 
@@ -18,6 +19,16 @@ from src.features.registry import FEATURE_REGISTRY
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
+
+def _ensure_row_factory(db):
+    """Force mapping-style row access for feature queries.
+
+    Some maintenance scripts open sqlite connections directly and forget to set
+    row_factory, which makes fetches return tuples and breaks all c["close"] /
+    row["field"] lookups in this module.
+    """
+    if getattr(db, "row_factory", None) is not sqlite3.Row:
+        db.row_factory = sqlite3.Row
 
 def _load_candles(db, symbol, ts_ms, n_bars):
     """Load up to n_bars of candles ending at or before ts_ms, ordered oldest-first."""
@@ -914,6 +925,8 @@ def compute_features(symbol, ts_ms, db, feature_names=None):
     Returns:
         {"feature_version": "abc12345", "feature_names": [...], "feature_values": {...}}
     """
+    _ensure_row_factory(db)
+
     if feature_names is None:
         names = sorted(FEATURE_REGISTRY.keys())
     else:

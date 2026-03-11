@@ -324,7 +324,8 @@ def check_exits(
                     features = compute_features(
                         symbol, ts_ms, db, feature_names=feature_set
                     )
-                    feature_values = [features.get(f) for f in feature_set]
+                    fv_dict = features["feature_values"]
+                    feature_values = [fv_dict.get(f) for f in feature_set]
                     if all(v is not None for v in feature_values):
                         score = model.predict_proba([feature_values])[0][1]
                         if score < inv_threshold:
