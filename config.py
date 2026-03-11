@@ -74,7 +74,10 @@ PNL_WEIGHT_SL = _env("PNL_WEIGHT_SL", 0.50, float)  # (SL/TP) × 1.5 = 0.5
 
 # ── Execution ────────────────────────────────────────────────────────────
 MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 3, int)
-MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 3, int)
+# 2026-03-11: Increased 3→6 to expand entry volume. Signal supply is abundant
+# (419/468 coins score ≥0.40 per cycle) but positions were filling to capacity
+# and blocking all new entries until exits occurred.
+MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 6, int)
 BASE_POSITION_PCT = _env("BASE_POSITION_PCT", 0.02, float)
 MAX_POSITION_PCT = _env("MAX_POSITION_PCT", 0.05, float)
 NEW_LISTING_BOOST = _env("NEW_LISTING_BOOST", 1.5, float)
@@ -85,7 +88,9 @@ TRAIL_ACTIVATE_PCT = _env("TRAIL_ACTIVATE_PCT", 0.20, float)
 TRAIL_DISTANCE_PCT = _env("TRAIL_DISTANCE_PCT", 0.10, float)
 INVALIDATION_GRACE_BARS = _env("INVALIDATION_GRACE_BARS", 2, int)
 PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)
-TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 2, int)
+# 2026-03-11: Increased 2→5 so that when position slots are available, up to 5
+# signals are taken per 4h cycle instead of just 2.
+TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 5, int)
 ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.70, float)
 SYMBOL_WHITELIST = _env_csv("SYMBOL_WHITELIST", [])
 SYMBOL_WHITELIST_MIN_TRADES = _env("SYMBOL_WHITELIST_MIN_TRADES", 20, int)
