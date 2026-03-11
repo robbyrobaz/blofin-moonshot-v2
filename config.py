@@ -55,8 +55,8 @@ LEVERAGE = _env("LEVERAGE", 3, int)  # Applied to all paper positions
 
 # ── Tournament ───────────────────────────────────────────────────────────
 MIN_BT_TRADES = _env("MIN_BT_TRADES", 50, int)
-MIN_BT_PF = _env("MIN_BT_PF", 2.0, float)
-MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.40, float)
+MIN_BT_PF = _env("MIN_BT_PF", 1.0, float)  # Lowered: FT is FREE, test everything
+MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.20, float)  # Lowered: PF matters more than precision
 MAX_FT_MODELS = _env("MAX_FT_MODELS", 10, int)
 # 2026-03-06: Relaxed thresholds — keep models in FT longer to collect more data.
 # Only retire clear losers (PF < 0.8) after substantial sample (200+ trades).
