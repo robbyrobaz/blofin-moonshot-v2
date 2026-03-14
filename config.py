@@ -74,6 +74,7 @@ PNL_WEIGHT_TP = _env("PNL_WEIGHT_TP", 1.0, float)
 PNL_WEIGHT_SL = _env("PNL_WEIGHT_SL", 0.50, float)  # (SL/TP) × 1.5 = 0.5
 
 # ── Execution ────────────────────────────────────────────────────────────
+LONG_DISABLED = _env("LONG_DISABLED", True, lambda v: str(v).lower() in {"1", "true", "yes", "on"})
 MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 3, int)
 # 2026-03-11: Increased 3→6 to expand entry volume. Signal supply is abundant
 # (419/468 coins score ≥0.40 per cycle) but positions were filling to capacity

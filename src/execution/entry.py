@@ -178,7 +178,9 @@ def score_and_enter(
     }
 
     directions = []
-    if long_champion is not None and regime != "bear":
+    if config.LONG_DISABLED:
+        log.info("score_and_enter: long side disabled by config")
+    elif long_champion is not None and regime != "bear":
         directions.append(("long", long_champion, config.MAX_LONG_POSITIONS))
     if short_champion is not None:
         directions.append(("short", short_champion, config.MAX_SHORT_POSITIONS))
