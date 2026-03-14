@@ -22,17 +22,21 @@ def get_current_price(db: sqlite3.Connection, symbol: str) -> float | None:
     return row["close"] if row else None
 
 
-def compute_pnl_pct(entry_price: float, exit_price: float, direction: str) -> float:
-    """Compute PnL percentage for a trade, including leverage.
+def compute_pnl_pct(
+    entry_price: float,
+    exit_price: float,
+    direction: str,
+    leverage: float,
+) -> float:
+    """Compute PnL percentage for a trade at the position's leverage.
 
-    Long:  (exit - entry) / entry * LEVERAGE
-    Short: (entry - exit) / entry * LEVERAGE
+    Long:  (exit - entry) / entry * leverage
+    Short: (entry - exit) / entry * leverage
     """
-    import config as _config
     if direction == "long":
-        return (exit_price - entry_price) / entry_price * _config.LEVERAGE
+        return (exit_price - entry_price) / entry_price * leverage
     else:
-        return (entry_price - exit_price) / entry_price * _config.LEVERAGE
+        return (entry_price - exit_price) / entry_price * leverage
 
 
 def update_high_water(
@@ -205,6 +209,7 @@ def check_exits(
         symbol = pos["symbol"]
         direction = pos["direction"]
         entry_price = pos["entry_price"]
+        leverage = pos["leverage"] or 1
         position_id = pos["id"]
         model_id = pos["model_id"]
         hwp = pos["high_water_price"]
@@ -228,7 +233,7 @@ def check_exits(
             tp_hit = current_price <= entry_price * (1 - config.TP_PCT)
 
         if tp_hit:
-            pnl = compute_pnl_pct(entry_price, current_price, direction)
+            pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
             _close_position(db, pos, current_price, "TAKE_PROFIT", pnl, ts_ms)
             counts["exits_tp"] += 1
             continue
@@ -241,7 +246,7 @@ def check_exits(
             sl_hit = current_price >= entry_price * (1 + config.SL_PCT)
 
         if sl_hit:
-            pnl = compute_pnl_pct(entry_price, current_price, direction)
+            pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
             _close_position(db, pos, current_price, "STOP_LOSS", pnl, ts_ms)
             counts["exits_sl"] += 1
             continue
@@ -275,14 +280,14 @@ def check_exits(
                 trail_hit = current_price >= hwp * (1 + config.TRAIL_DISTANCE_PCT)
 
             if trail_hit:
-                pnl = compute_pnl_pct(entry_price, current_price, direction)
+                pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
                 _close_position(db, pos, current_price, "TRAILING_STOP", pnl, ts_ms)
                 counts["exits_trail"] += 1
                 continue
 
         # ── 4. TIME_STOP ─────────────────────────────────────────────────
         if bars_since_entry > config.TIME_STOP_BARS:
-            pnl = compute_pnl_pct(entry_price, current_price, direction)
+            pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
             _close_position(db, pos, current_price, "TIME_STOP", pnl, ts_ms)
             counts["exits_time"] += 1
             continue
@@ -296,7 +301,7 @@ def check_exits(
                 and entry_score is not None
                 and entry_score < inv_threshold
             ):
-                pnl = compute_pnl_pct(entry_price, current_price, direction)
+                pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
                 _close_position(
                     db, pos, current_price, "INVALIDATION", pnl, ts_ms
                 )
@@ -305,7 +310,7 @@ def check_exits(
 
         # ── 6. REGIME_EXIT ───────────────────────────────────────────────
         if regime == "bear" and direction == "long":
-            pnl = compute_pnl_pct(entry_price, current_price, direction)
+            pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
             _close_position(db, pos, current_price, "REGIME_EXIT", pnl, ts_ms)
             counts["exits_regime"] += 1
             continue
