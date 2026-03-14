@@ -22,7 +22,7 @@ from config import (
 )
 from src.features.registry import FEATURE_REGISTRY
 from src.scoring.thresholds import effective_entry_threshold
-from src.tournament.challenger import FEATURE_SUBSETS
+from src.tournament.challenger import resolve_feature_set
 
 
 def _load_model(model_id: str):
@@ -35,15 +35,7 @@ def _load_model(model_id: str):
 
 def _resolve_feature_names(feature_set_raw):
     """Support legacy preset keys and JSON-serialized feature lists."""
-    if not feature_set_raw:
-        return FEATURE_SUBSETS["core_only"]
-    try:
-        parsed = json.loads(feature_set_raw)
-    except Exception:
-        parsed = None
-    if isinstance(parsed, list):
-        return parsed
-    return FEATURE_SUBSETS.get(feature_set_raw, FEATURE_SUBSETS["core_only"])
+    return resolve_feature_set(feature_set_raw)
 
 
 def _get_feature_values(db, symbol: str, ts_ms: int, feature_names: list[str]):

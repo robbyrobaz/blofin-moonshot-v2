@@ -64,8 +64,38 @@ _SOCIAL_FEATURES = [
     "github_commits_7d", "github_commit_spike",
 ]
 
+_PRICE_FEATURES = [
+    "price_vs_52w_high", "price_vs_52w_low",
+    "momentum_4w", "momentum_8w",
+    "bb_squeeze_pct", "bb_position",
+    "distance_from_support", "distance_from_resistance",
+    "consec_down_bars", "consec_up_bars", "higher_highs",
+    "price_vs_24h_high", "price_vs_24h_low", "price_change_24h_pct",
+]
+
+_VOLUME_FEATURES = [
+    "volume_ratio_7d", "volume_ratio_3d",
+    "obv_slope", "volume_spike", "volume_trend",
+    "vol_24h_vs_7d_avg",
+    "oi_change_24h", "oi_change_7d", "oi_price_divergence", "oi_percentile_90d",
+]
+
+_VOLATILITY_FEATURES = [
+    "atr_percentile", "atr_compression",
+    "high_low_range_pct", "realized_vol_ratio",
+    "mark_index_spread", "funding_rate_current",
+    "funding_rate_7d_avg", "funding_rate_extreme",
+]
+
+_REGIME_FEATURES = [
+    "btc_30d_return", "btc_vol_percentile", "market_breadth",
+]
+
+_NON_SOCIAL_FEATURES = sorted(set(_CORE_FEATURES + _EXTENDED_FEATURES))
+_ALL_FEATURES = _CORE_FEATURES + _EXTENDED_FEATURES + _SOCIAL_FEATURES
+
 FEATURE_SUBSETS = {
-    "all": _CORE_FEATURES + _EXTENDED_FEATURES + _SOCIAL_FEATURES,
+    "all": _ALL_FEATURES,
     "core_only": _CORE_FEATURES,
     "price_volume": [
         "price_vs_52w_high", "price_vs_52w_low",
@@ -79,6 +109,91 @@ FEATURE_SUBSETS = {
     "no_social": _CORE_FEATURES + _EXTENDED_FEATURES,
     "extended_only": _CORE_FEATURES + _EXTENDED_FEATURES,
 }
+
+_RANDOM_SUBSET_FOCUS_AREAS = (
+    "price_heavy",
+    "volume_heavy",
+    "volatility_heavy",
+    "regime_aware",
+    "social_boost",
+    "minimal",
+    "maximal",
+)
+
+
+def _sample_unique_features(pool: list[str], count: int, required: list[str] | None = None) -> list[str]:
+    """Sample a deduplicated feature list with optional required features."""
+    required = list(dict.fromkeys(required or []))
+    base = [feature for feature in required if feature in pool]
+    remaining = [feature for feature in pool if feature not in base]
+    extra_count = max(0, min(count - len(base), len(remaining)))
+    sampled = random.sample(remaining, k=extra_count) if extra_count else []
+    return base + sampled
+
+
+def generate_random_feature_subset(focus_area: str | None = None) -> list[str]:
+    """Generate a random feature subset biased toward one discovery focus area."""
+    focus_area = focus_area or random.choice(_RANDOM_SUBSET_FOCUS_AREAS)
+    if focus_area not in _RANDOM_SUBSET_FOCUS_AREAS:
+        raise ValueError(f"Unknown focus area: {focus_area}")
+
+    if focus_area == "maximal":
+        return list(_ALL_FEATURES)
+
+    if focus_area == "social_boost":
+        return list(dict.fromkeys(_CORE_FEATURES + _SOCIAL_FEATURES))
+
+    if focus_area == "minimal":
+        subset_size = random.randint(10, 15)
+        required = random.sample(_CORE_FEATURES, k=min(4, subset_size))
+        return sorted(_sample_unique_features(_NON_SOCIAL_FEATURES, subset_size, required))
+
+    if focus_area == "regime_aware":
+        regime_count = max(1, min(len(_REGIME_FEATURES), random.randint(5, 9) // 2))
+        market_count = random.randint(5, 9)
+        regime = random.sample(_REGIME_FEATURES, k=regime_count)
+        market_pool = sorted(set(_PRICE_FEATURES + _VOLUME_FEATURES) - set(regime))
+        market = random.sample(market_pool, k=min(market_count, len(market_pool)))
+        return sorted(set(regime + market))
+
+    if focus_area == "price_heavy":
+        primary_pool = _PRICE_FEATURES
+        secondary_pool = sorted(set(_ALL_FEATURES) - set(_PRICE_FEATURES))
+        subset_size = random.randint(14, 24)
+        primary_ratio = 0.8
+    elif focus_area == "volume_heavy":
+        primary_pool = _VOLUME_FEATURES
+        secondary_pool = sorted(set(_ALL_FEATURES) - set(_VOLUME_FEATURES))
+        subset_size = random.randint(14, 24)
+        primary_ratio = 0.8
+    else:
+        primary_pool = _VOLATILITY_FEATURES
+        secondary_pool = sorted(set(_ALL_FEATURES) - set(_VOLATILITY_FEATURES))
+        subset_size = random.randint(12, 22)
+        primary_ratio = 0.8
+
+    primary_target = max(1, min(len(primary_pool), round(subset_size * primary_ratio)))
+    secondary_target = max(0, subset_size - primary_target)
+    primary = random.sample(primary_pool, k=primary_target)
+    secondary = random.sample(secondary_pool, k=min(secondary_target, len(secondary_pool)))
+    return sorted(set(primary + secondary))
+
+
+def resolve_feature_set(feature_set_raw) -> list[str]:
+    """Support preset keys, raw lists, and JSON-serialized feature lists."""
+    if not feature_set_raw:
+        return FEATURE_SUBSETS["core_only"]
+    if isinstance(feature_set_raw, list):
+        return feature_set_raw
+    if isinstance(feature_set_raw, str):
+        try:
+            parsed = json.loads(feature_set_raw)
+        except Exception:
+            parsed = None
+        if isinstance(parsed, list):
+            return parsed
+        return FEATURE_SUBSETS.get(feature_set_raw, FEATURE_SUBSETS["core_only"])
+    return FEATURE_SUBSETS["core_only"]
 
 
 def _make_model_id(params: dict) -> str:
@@ -95,7 +210,10 @@ def _sample_params(forced_direction: str | None = None) -> dict:
             params[key] = forced_direction
         else:
             params[key] = random.choice(choices)
-    params["feature_set"] = random.choice(list(FEATURE_SUBSETS.keys()))
+    if random.random() < 0.5:
+        params["feature_set"] = generate_random_feature_subset()
+    else:
+        params["feature_set"] = random.choice(list(FEATURE_SUBSETS.keys()))
     return params
 
 
@@ -124,7 +242,8 @@ def generate_challengers(db, n: int = None) -> list[dict]:
         forced_direction = target_dirs[len(created)] if len(created) < len(target_dirs) else None
         params = _sample_params(forced_direction=forced_direction)
         model_id = _make_model_id(params)
-        feature_set = json.dumps(FEATURE_SUBSETS[params["feature_set"]])
+        feature_names = resolve_feature_set(params["feature_set"])
+        feature_set = json.dumps(feature_names)
 
         # Check if already exists
         row = db.execute(

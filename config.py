@@ -46,8 +46,8 @@ BACKFILL_TARGET_YEARS = _env("BACKFILL_TARGET_YEARS", 4, int)
 
 # ── Labels ───────────────────────────────────────────────────────────────
 # 15%/5% price targets with 3x leverage = effective 45%/15% PnL (same 3:1 R:R)
-TP_PCT = _env("TP_PCT", 0.15, float)
-SL_PCT = _env("SL_PCT", 0.05, float)
+TP_PCT = _env("TP_PCT", 0.10, float)  # 10% take profit (was 15%)
+SL_PCT = _env("SL_PCT", 0.05, float)  # 5% stop loss
 LABEL_HORIZON_BARS = _env("LABEL_HORIZON_BARS", 42, int)
 
 # ── Leverage ─────────────────────────────────────────────────────────────

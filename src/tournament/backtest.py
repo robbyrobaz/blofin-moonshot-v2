@@ -21,7 +21,7 @@ from config import (
     log,
 )
 from src.features.registry import FEATURE_REGISTRY
-from src.tournament.challenger import FEATURE_SUBSETS
+from src.tournament.challenger import resolve_feature_set
 
 
 # ---------------------------------------------------------------------------
@@ -276,7 +276,7 @@ def backtest_challenger(db, model_params: dict) -> dict:
     params = model_params if isinstance(model_params, dict) else json.loads(model_params)
     direction = params["direction"]
     feature_set_key = params.get("feature_set", "core_only")
-    feature_names = FEATURE_SUBSETS.get(feature_set_key, FEATURE_SUBSETS["core_only"])
+    feature_names = resolve_feature_set(feature_set_key)
     threshold = params["confidence_threshold"]
 
     result = {
