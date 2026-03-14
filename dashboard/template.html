@@ -882,9 +882,10 @@ async function loadMarket() {
 async function loadVault() {
   const el = document.getElementById('vault-body');
   try {
-    const models = await apiFetch('/api/vault');
+    const resp = await apiFetch('/api/vault');
+    const models = resp.vault || [];
 
-    if (!models || models.length === 0) {
+    if (models.length === 0) {
       el.innerHTML = '<div class="empty-state">No models in the vault yet — tournament is building.</div>';
       return;
     }
