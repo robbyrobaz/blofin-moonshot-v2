@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moonshot v2</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#FFD700;--green:#4CAF50;--red:#FF5252;--blue:#4fc3f7;
+  --bg:#1a1a2e;--card:#16213e;--border:#0f3460;
+  --t1:#e0e0e0;--t2:#888;--gbr:#00e676;
+}
+body{font:11px/1.35 'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t1);padding:6px 10px}
+a{color:var(--blue);text-decoration:none}
+
+/* Header */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 0 6px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.hdr h1{font-size:13px;font-weight:700;color:#fff}
+.hdr h1 b{color:var(--gold)}
+.hdr-r{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--t2)}
+.badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.b-bull{background:rgba(0,230,118,.15);color:var(--gbr);border:1px solid rgba(0,230,118,.3)}
+.b-bear{background:rgba(255,82,82,.15);color:var(--red);border:1px solid rgba(255,82,82,.3)}
+.b-neutral{background:rgba(255,235,59,.12);color:#ffeb3b;border:1px solid rgba(255,235,59,.25)}
+.b-unknown{background:rgba(136,136,136,.15);color:var(--t2);border:1px solid rgba(136,136,136,.3)}
+
+/* Stats bar */
+.stats{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 6px;background:var(--card);border:1px solid var(--border);border-radius:4px;margin-bottom:6px;font-size:10px}
+.stats .s{color:var(--t2)}.stats .v{color:#fff;font-weight:600}
+.green{color:var(--gbr)!important}.red{color:var(--red)!important}.gold{color:var(--gold)!important}
+
+/* Section headers */
+.sec{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;padding:6px 0 3px;border-bottom:1px solid var(--border);margin-bottom:3px}
+
+/* Tables — ultra-compact */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th{text-align:left;padding:2px 5px;color:var(--t2);font-weight:600;white-space:nowrap;border-bottom:1px solid var(--border);font-size:9px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none}
+th:hover{color:var(--blue)}
+th.sorted-asc::after{content:' \u25B2';font-size:7px}
+th.sorted-desc::after{content:' \u25BC';font-size:7px}
+td{padding:2px 5px;white-space:nowrap;border-bottom:1px solid rgba(15,52,96,.3)}
+tr:hover td{background:rgba(15,52,96,.25)}
+tr.champ td{background:rgba(255,215,0,.04)}
+td.mono{font-family:'Courier New',monospace;font-size:9px}
+
+/* Direction badges */
+.d{display:inline-block;padding:0 4px;border-radius:2px;font-size:9px;font-weight:700;text-transform:uppercase}
+.d-s{background:rgba(255,82,82,.15);color:var(--red)}
+.d-l{background:rgba(0,230,118,.15);color:var(--gbr)}
+
+/* Stage badges */
+.st{display:inline-block;padding:0 4px;border-radius:2px;font-size:8px;font-weight:700;text-transform:uppercase}
+.st-c{background:rgba(255,215,0,.2);color:var(--gold);border:1px solid rgba(255,215,0,.4)}
+.st-ft{background:rgba(76,175,80,.12);color:var(--green)}
+.st-p{background:rgba(255,235,59,.12);color:#ffeb3b}
+
+/* Pipeline inline */
+.pipe{display:flex;gap:3px;align-items:center;font-size:9px;color:var(--t2);margin-bottom:6px}
+.pipe .p-bar{height:10px;border-radius:2px;min-width:2px}
+.pipe .p-n{font-weight:700;color:#fff;min-width:28px;text-align:right}
+.pipe .p-lbl{min-width:50px}
+.pipe .p-arr{color:var(--blue);font-size:8px}
+
+/* Buttons */
+.btn{padding:2px 8px;background:rgba(15,52,96,.3);border:1px solid var(--border);border-radius:3px;color:var(--blue);cursor:pointer;font-size:9px}
+.btn:hover{background:rgba(15,52,96,.5)}
+
+/* Grid layout */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media(max-width:768px){.grid2{grid-template-columns:1fr}}
+
+/* Fear & Greed inline */
+.fg-bar{display:inline-block;width:60px;height:6px;background:linear-gradient(90deg,#FF5252,#ff9100,#ffeb3b,#4CAF50,#00e676);border-radius:3px;position:relative;vertical-align:middle}
+.fg-bar .fg-dot{position:absolute;top:-2px;width:10px;height:10px;background:#fff;border-radius:50%;transform:translateX(-50%);box-shadow:0 0 3px rgba(0,0,0,.5)}
+
+/* Loading */
+.loading{color:var(--t2);font-style:italic;padding:4px 0;font-size:10px}
+.err{background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);color:var(--red);border-radius:3px;padding:3px 6px;font-size:10px}
+
+/* Health inline */
+.health-row{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:9px;color:var(--t2);padding:4px 0;border-top:1px solid var(--border);margin-top:4px}
+.health-row .ok{color:var(--green)}.health-row .bad{color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <h1>Moonshot <b>v2</b></h1>
+  <div class="hdr-r">
+    <span id="last-updated">loading</span>
+    <span id="regime-badge" class="badge b-unknown"><span id="regime-text">—</span></span>
+    <span id="fg-inline"></span>
+    <span id="btc-inline"></span>
+  </div>
+</div>
+
+<!-- Pipeline + Stats bar (inline) -->
+<div id="stats-bar" class="stats"><span class="loading">loading...</span></div>
+
+<!-- Master Models Table -->
+<div class="sec">All Models — FT &amp; Champion <span id="models-count" style="font-weight:400"></span></div>
+<div class="tw"><table id="models-table"><tbody><tr><td class="loading" colspan="10">loading...</td></tr></tbody></table></div>
+<div style="padding:3px 0" id="models-toggle-wrap"></div>
+
+<!-- Two-column: Positions + Recent Trades -->
+<div class="grid2">
+  <div>
+    <div class="sec">Open Positions <span id="pos-count" style="font-weight:400"></span></div>
+    <div class="tw"><table id="pos-table"><tbody><tr><td class="loading" colspan="8">loading...</td></tr></tbody></table></div>
+    <div id="pos-toggle-wrap" style="padding:3px 0"></div>
+  </div>
+  <div>
+    <div class="sec">Recent Trades (48h) <span id="trades-sum" style="font-weight:400"></span></div>
+    <div class="tw"><table id="trades-table"><tbody><tr><td class="loading" colspan="7">loading...</td></tr></tbody></table></div>
+    <div id="trades-toggle-wrap" style="padding:3px 0"></div>
+  </div>
+</div>
+
+<!-- Health footer -->
+<div id="health-row" class="health-row">loading...</div>
+
+<script>
+// ── Utilities ──────────────────────────────────────────────────────────────
+function fp(v,d=2){if(v==null||v===''||isNaN(v))return'—';const n=+v;return(n>=0?'+':'')+n.toFixed(d)+'%'}
+function ff(v,d=2){if(v==null||v===''||isNaN(v))return'—';return(+v).toFixed(d)}
+function fn(v){if(v==null)return'—';return Number(v).toLocaleString()}
+function pc(v){if(v==null)return'';return+v>=0?'green':'red'}
+function tr8(id){if(!id)return'—';return id.slice(0,8)}
+function dir(d){return d==='short'?'<span class="d d-s">S</span>':'<span class="d d-l">L</span>'}
+function stg(s,paused){
+  if(s==='champion')return'<span class="st st-c">CHAMP</span>';
+  if(paused)return'<span class="st st-p">PAUSED</span>';
+  return'<span class="st st-ft">FT</span>';
+}
+
+async function api(ep){const r=await fetch(ep);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+
+// ── State ──────────────────────────────────────────────────────────────────
+let modelsData=[], modelsSortCol='ft_pnl', modelsSortDir='desc', modelsShowAll=false;
+let posShowAll=false, tradesShowAll=false;
+
+// ── Header / Market ────────────────────────────────────────────────────────
+async function loadHeader(){
+  try{
+    const[mkt,pipe,health]=await Promise.all([api('/api/market'),api('/api/pipeline'),api('/api/health')]);
+
+    // Regime badge
+    const reg=(mkt.regime||'unknown').toLowerCase();
+    const b=document.getElementById('regime-badge');
+    const t=document.getElementById('regime-text');
+    if(b)b.className='badge b-'+reg;
+    if(t)t.textContent=reg.toUpperCase();
+
+    // BTC 30d
+    const btc=mkt.btc_30d_return!=null?mkt.btc_30d_return*100:null;
+    document.getElementById('btc-inline').innerHTML=btc!=null?
+      `<span class="${pc(btc)}" style="font-weight:700">BTC ${fp(btc,1)}</span>`:'';
+
+    // Fear & Greed
+    const fgObj=mkt.fear_greed;
+    const fg=fgObj!=null?fgObj.value:null;
+    document.getElementById('fg-inline').innerHTML=fg!=null?
+      `F&G:<b style="color:${fg<25?'var(--red)':fg<50?'var(--gold)':fg<75?'#ffeb3b':'var(--green)'}">${Math.round(fg)}</b>`:''
+
+    // Stats bar
+    const sb=document.getElementById('stats-bar');
+    sb.innerHTML=`
+      <span><span class="s">Trained:</span> <span class="v">${fn(pipe.total_ever)}</span></span>
+      <span><span class="s">BT Pass:</span> <span class="v">${fn(pipe.ever_reached_ft)}</span> <span class="s">(${pipe.bt_pass_rate_pct}%)</span></span>
+      <span><span class="s">FT Active:</span> <span class="v">${fn(pipe.forward_test)}</span></span>
+      <span><span class="s">Retired:</span> <span class="v">${fn(pipe.retired_from_ft)}</span></span>
+      <span><span class="s">Champion:</span> <span class="v gold">${pipe.champion}</span></span>
+      <span><span class="s">FT→Champ:</span> <span class="v">${pipe.ft_to_champion_rate_pct}%</span></span>
+      <span><span class="s">DB:</span> <span class="v">${health.db_size_mb!=null?ff(health.db_size_mb/1024,1)+'GB':'—'}</span></span>
+      <span><span class="s">Coins:</span> <span class="v">${fn(health.coin_count)}</span></span>
+      <span><span class="s">Run:</span> <span class="v">#${health.last_run_id||'—'}</span></span>
+      ${health.errors?'<span class="red">ERR: '+health.errors+'</span>':''}
+    `;
+
+    // Health footer
+    const hf=document.getElementById('health-row');
+    const cycles=health.recent_cycles||[];
+    const avgDur=cycles.length?Math.round(cycles.reduce((a,c)=>a+(c.duration_s||0),0)/cycles.length):null;
+    hf.innerHTML=`
+      <span><span class="ok">●</span> ${health.status==='ok'?'Healthy':'Error'}</span>
+      <span>Candles: ${fn(health.candle_count)}</span>
+      <span>FT models: ${health.ft_model_count}</span>
+      <span>Champions: ${health.champion_count}</span>
+      ${avgDur!=null?'<span>Avg cycle: '+avgDur+'s</span>':''}
+      <span>Updated: ${new Date().toISOString().slice(0,16).replace('T',' ')} UTC</span>
+    `;
+
+    document.getElementById('last-updated').textContent=new Date().toISOString().slice(11,16)+' UTC';
+  }catch(e){
+    document.getElementById('stats-bar').innerHTML='<span class="err">'+e.message+'</span>';
+  }
+}
+
+// ── Models Master Table ────────────────────────────────────────────────────
+async function loadModels(){
+  try{
+    const resp=await api('/api/models');
+    modelsData=resp.models||[];
+    document.getElementById('models-count').textContent='('+modelsData.length+')';
+    renderModels();
+  }catch(e){
+    document.getElementById('models-table').innerHTML='<tbody><tr><td class="err" colspan="10">'+e.message+'</td></tr></tbody>';
+  }
+}
+
+function renderModels(){
+  const sorted=[...modelsData].sort((a,b)=>{
+    let va=a[modelsSortCol], vb=b[modelsSortCol];
+    if(va==null)va=-Infinity;if(vb==null)vb=-Infinity;
+    if(modelsSortCol==='model_id'||modelsSortCol==='direction'||modelsSortCol==='stage'){
+      va=String(va);vb=String(vb);
+      return modelsSortDir==='asc'?va.localeCompare(vb):vb.localeCompare(va);
+    }
+    return modelsSortDir==='asc'?va-vb:vb-va;
+  });
+
+  const LIMIT=10;
+  const show=modelsShowAll?sorted:sorted.slice(0,LIMIT);
+
+  const cols=[
+    {key:'model_id',label:'Model'},
+    {key:'direction',label:'Dir'},
+    {key:'stage',label:'Stage'},
+    {key:'ft_trades',label:'Trades'},
+    {key:'ft_pnl',label:'FT PnL%'},
+    {key:'ft_pf',label:'FT PF'},
+    {key:'ft_win_rate',label:'FT WR%'},
+    {key:'ft_max_drawdown_pct',label:'Max DD'},
+    {key:'bt_pf',label:'BT PF'},
+    {key:'days_in_ft',label:'Age(d)'},
+  ];
+
+  const ths=cols.map(c=>{
+    let cls='';
+    if(c.key===modelsSortCol)cls=modelsSortDir==='asc'?'sorted-asc':'sorted-desc';
+    return`<th class="${cls}" onclick="sortModels('${c.key}')">${c.label}</th>`;
+  }).join('');
+
+  const trs=show.map(m=>{
+    const isChamp=m.stage==='champion';
+    const pfCls=m.ft_pf!=null?(m.ft_pf>=2?'gold':m.ft_pf>=1?'green':'red'):'';
+    return`<tr class="${isChamp?'champ':''}">
+      <td class="mono">${tr8(m.model_id)}</td>
+      <td>${dir(m.direction)}</td>
+      <td>${stg(m.stage,m.is_paused)}</td>
+      <td>${m.ft_trades??'—'}</td>
+      <td class="${pc(m.ft_pnl)}">${fp(m.ft_pnl)}</td>
+      <td class="${pfCls}">${ff(m.ft_pf)}</td>
+      <td>${m.ft_win_rate!=null?ff(m.ft_win_rate,1)+'%':'—'}</td>
+      <td>${m.ft_max_drawdown_pct!=null?ff(Math.abs(m.ft_max_drawdown_pct),1)+'%':'—'}</td>
+      <td>${ff(m.bt_pf)}</td>
+      <td>${m.days_in_ft??'—'}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('models-table').innerHTML=`<thead><tr>${ths}</tr></thead><tbody>${trs}</tbody>`;
+
+  const wrap=document.getElementById('models-toggle-wrap');
+  if(sorted.length>LIMIT){
+    wrap.innerHTML=modelsShowAll?
+      `<button class="btn" onclick="modelsShowAll=false;renderModels()">Show top 10</button>`:
+      `<button class="btn" onclick="modelsShowAll=true;renderModels()">Show all ${sorted.length} models</button>`;
+  }else{wrap.innerHTML='';}
+}
+
+function sortModels(col){
+  if(modelsSortCol===col){modelsSortDir=modelsSortDir==='desc'?'asc':'desc'}
+  else{modelsSortCol=col;modelsSortDir='desc'}
+  renderModels();
+}
+
+// ── Open Positions ─────────────────────────────────────────────────────────
+async function loadPositions(){
+  const el=document.getElementById('pos-table');
+  const cnt=document.getElementById('pos-count');
+  try{
+    const resp=await api('/api/positions');
+    const pos=resp.positions||[];
+    cnt.textContent='('+pos.length+')';
+
+    if(!pos.length){el.innerHTML='<tbody><tr><td class="loading" colspan="8">No open positions</td></tr></tbody>';return}
+
+    const LIMIT=10;
+    const show=posShowAll?pos:pos.slice(0,LIMIT);
+
+    const rows=show.map(p=>`<tr>
+      <td><b>${p.symbol||'—'}</b></td>
+      <td>${dir(p.direction)}</td>
+      <td class="mono">${tr8(p.model_id)}</td>
+      <td>${ff(p.entry_price,4)}</td>
+      <td>${ff(p.current_price,4)}</td>
+      <td class="${pc(p.unrealized_pnl_pct)}"><b>${fp(p.unrealized_pnl_pct)}</b></td>
+      <td style="color:var(--green)">${fp(p.tp_distance_pct,1)}</td>
+      <td style="color:var(--red)">${fp(p.sl_distance_pct,1)}</td>
+    </tr>`).join('');
+
+    el.innerHTML=`<thead><tr><th>Sym</th><th>Dir</th><th>Model</th><th>Entry</th><th>Now</th><th>PnL%</th><th>→TP</th><th>→SL</th></tr></thead><tbody>${rows}</tbody>`;
+
+    const wrap=document.getElementById('pos-toggle-wrap');
+    if(pos.length>LIMIT){
+      wrap.innerHTML=posShowAll?
+        `<button class="btn" onclick="posShowAll=false;loadPositions()">Show 10</button>`:
+        `<button class="btn" onclick="posShowAll=true;loadPositions()">Show all ${pos.length}</button>`;
+    }else{wrap.innerHTML='';}
+  }catch(e){el.innerHTML='<tbody><tr><td class="err" colspan="8">'+e.message+'</td></tr></tbody>';}
+}
+
+// ── Recent Trades ──────────────────────────────────────────────────────────
+async function loadTrades(){
+  const el=document.getElementById('trades-table');
+  const sumEl=document.getElementById('trades-sum');
+  try{
+    const d=await api('/api/recent-trades');
+    const trades=d.trades||[];
+    const sum=d.summary||{};
+    sumEl.innerHTML=`<span class="${pc(sum.total_pnl)}">${fp(sum.total_pnl)}</span> ${sum.wins||0}W/${sum.losses||0}L`;
+
+    if(!trades.length){el.innerHTML='<tbody><tr><td class="loading" colspan="7">No trades in 48h</td></tr></tbody>';return}
+
+    const LIMIT=10;
+    const show=tradesShowAll?trades:trades.slice(0,LIMIT);
+
+    const rows=show.map(t=>`<tr>
+      <td><b>${t.symbol||'—'}</b></td>
+      <td>${dir(t.direction)}</td>
+      <td class="mono">${tr8(t.model_id)}</td>
+      <td class="${pc(t.pnl_pct)}"><b>${fp(t.pnl_pct)}</b></td>
+      <td style="color:var(--t2)">${t.exit_reason||'—'}</td>
+      <td style="color:var(--t2);font-size:9px">${t.exit_ts||'—'}</td>
+    </tr>`).join('');
+
+    el.innerHTML=`<thead><tr><th>Sym</th><th>Dir</th><th>Model</th><th>PnL%</th><th>Reason</th><th>Closed</th></tr></thead><tbody>${rows}</tbody>`;
+
+    const wrap=document.getElementById('trades-toggle-wrap');
+    if(trades.length>LIMIT){
+      wrap.innerHTML=tradesShowAll?
+        `<button class="btn" onclick="tradesShowAll=false;loadTrades()">Show 10</button>`:
+        `<button class="btn" onclick="tradesShowAll=true;loadTrades()">Show all ${trades.length}</button>`;
+    }else{wrap.innerHTML='';}
+  }catch(e){el.innerHTML='<tbody><tr><td class="err" colspan="7">'+e.message+'</td></tr></tbody>';}
+}
+
+// ── Orchestrate ────────────────────────────────────────────────────────────
+async function refreshAll(){
+  await Promise.allSettled([loadHeader(),loadModels(),loadPositions(),loadTrades()]);
+}
+refreshAll();
+setInterval(refreshAll,5*60*1000);
+</script>
+</body>
+</html>
