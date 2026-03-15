@@ -171,6 +171,33 @@ def _get_current_price(db, symbol: str, ts_ms: int) -> float | None:
     return float(row["close"]) if row else None
 
 
+def _compute_ft_pnl_metrics(db, model_id: str, total_pnl: float) -> tuple[float, float]:
+    """Compute time-normalized FT PnL metrics in the same units as ft_pnl."""
+    model_row = db.execute(
+        "SELECT created_at FROM tournament_models WHERE model_id = ?",
+        (model_id,),
+    ).fetchone()
+    created_at_ms = model_row["created_at"] if model_row else None
+    age_days = 1.0
+    if created_at_ms:
+        age_days = max(1.0, (time.time() * 1000 - created_at_ms) / 86_400_000)
+    ft_pnl_per_day = total_pnl / age_days
+
+    cutoff_ms = int(time.time() * 1000) - (7 * 24 * 3600 * 1000)
+    last_7d_row = db.execute(
+        """SELECT COALESCE(SUM(pnl_pct), 0.0) AS pnl
+           FROM positions
+           WHERE model_id = ?
+             AND is_champion_trade = 0
+             AND status = 'closed'
+             AND exit_ts IS NOT NULL
+             AND exit_ts >= ?""",
+        (model_id, cutoff_ms),
+    ).fetchone()
+    ft_pnl_last_7d = float(last_7d_row["pnl"] or 0.0) if last_7d_row else 0.0
+    return ft_pnl_per_day, ft_pnl_last_7d
+
+
 def _update_model_ft_stats(db, model_id: str):
     """Recompute forward test stats for a model from its closed positions."""
     rows = db.execute(
@@ -189,6 +216,7 @@ def _update_model_ft_stats(db, model_id: str):
     win_pnl = sum(p for p in pnls if p > 0)
     loss_pnl = abs(sum(p for p in pnls if p < 0))
     pf = win_pnl / loss_pnl if loss_pnl > 0 else 999.0
+    ft_pnl_per_day, ft_pnl_last_7d = _compute_ft_pnl_metrics(db, model_id, total_pnl)
 
     # Compute max drawdown from cumulative PnL curve
     cum = 0.0
@@ -202,10 +230,19 @@ def _update_model_ft_stats(db, model_id: str):
 
     db.execute(
         """UPDATE tournament_models
-           SET ft_trades = ?, ft_wins = ?, ft_pnl = ?, ft_pf = ?,
-               ft_max_drawdown_pct = ?
+           SET ft_trades = ?, ft_wins = ?, ft_pnl = ?, ft_pnl_per_day = ?,
+               ft_pnl_last_7d = ?, ft_pf = ?, ft_max_drawdown_pct = ?
            WHERE model_id = ?""",
-        (trades, wins, total_pnl, pf, max_dd, model_id),
+        (
+            trades,
+            wins,
+            total_pnl,
+            ft_pnl_per_day,
+            ft_pnl_last_7d,
+            pf,
+            max_dd,
+            model_id,
+        ),
     )
 
     # Drawdown pause check

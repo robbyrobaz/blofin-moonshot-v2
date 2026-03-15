@@ -261,7 +261,7 @@ def register_champion(db, direction: str, model_id: str, metrics: dict,
             """UPDATE tournament_models
                SET stage='champion', promoted_to_champion_at=?,
                    bt_trades=?, bt_pf=?, bt_precision=?, bt_pnl=?,
-                   ft_trades=?, ft_pf=?, ft_pnl=?,
+                   ft_trades=?, ft_pf=?, ft_pnl=?, ft_pnl_per_day=0.0, ft_pnl_last_7d=0.0,
                    entry_threshold=?, feature_set=?, feature_version=1,
                    retire_reason=NULL, retired_at=NULL
                WHERE model_id=?""",
@@ -286,11 +286,11 @@ def register_champion(db, direction: str, model_id: str, metrics: dict,
                (model_id, direction, stage, model_type, params, feature_set,
                 feature_version, entry_threshold,
                 bt_trades, bt_pf, bt_precision, bt_pnl,
-                ft_trades, ft_pf, ft_pnl,
+                ft_trades, ft_pf, ft_pnl, ft_pnl_per_day, ft_pnl_last_7d,
                 created_at, promoted_to_ft_at, promoted_to_champion_at)
                VALUES (?, ?, 'champion', 'lightgbm', ?, ?, 1, ?,
                        ?, ?, ?, ?,
-                       ?, ?, ?,
+                       ?, ?, ?, 0.0, 0.0,
                        ?, ?, ?)""",
             (
                 model_id, direction,

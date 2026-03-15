@@ -103,7 +103,7 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
 
 <!-- Master Models Table -->
 <div class="sec">All Models — FT &amp; Champion <span id="models-count" style="font-weight:400"></span></div>
-<div class="tw"><table id="models-table"><tbody><tr><td class="loading" colspan="10">loading...</td></tr></tbody></table></div>
+<div class="tw"><table id="models-table"><tbody><tr><td class="loading" colspan="12">loading...</td></tr></tbody></table></div>
 <div style="padding:3px 0" id="models-toggle-wrap"></div>
 
 <!-- Two-column: Positions + Recent Trades -->
@@ -139,7 +139,7 @@ function stg(s,paused){
 async function api(ep){const r=await fetch(ep);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 
 // ── State ──────────────────────────────────────────────────────────────────
-let modelsData=[], modelsSortCol='ft_pnl', modelsSortDir='desc', modelsShowAll=false;
+let modelsData=[], modelsSortCol='ft_pnl_last_7d', modelsSortDir='desc', modelsShowAll=false;
 let posShowAll=false, tradesShowAll=false;
 
 // ── Header / Market ────────────────────────────────────────────────────────
@@ -207,7 +207,7 @@ async function loadModels(){
     document.getElementById('models-count').textContent='('+modelsData.length+')';
     renderModels();
   }catch(e){
-    document.getElementById('models-table').innerHTML='<tbody><tr><td class="err" colspan="10">'+e.message+'</td></tr></tbody>';
+    document.getElementById('models-table').innerHTML='<tbody><tr><td class="err" colspan="12">'+e.message+'</td></tr></tbody>';
   }
 }
 
@@ -230,6 +230,8 @@ function renderModels(){
     {key:'direction',label:'Dir'},
     {key:'stage',label:'Stage'},
     {key:'ft_trades',label:'Trades'},
+    {key:'ft_pnl_last_7d',label:'7D PnL%'},
+    {key:'ft_pnl_per_day',label:'PnL/Day%'},
     {key:'ft_pnl',label:'FT PnL%'},
     {key:'ft_pf',label:'FT PF'},
     {key:'ft_win_rate',label:'FT WR%'},
@@ -252,6 +254,8 @@ function renderModels(){
       <td>${dir(m.direction)}</td>
       <td>${stg(m.stage,m.is_paused)}</td>
       <td>${m.ft_trades??'—'}</td>
+      <td class="${pc(m.ft_pnl_last_7d)}">${fp(m.ft_pnl_last_7d)}</td>
+      <td class="${pc(m.ft_pnl_per_day)}">${fp(m.ft_pnl_per_day)}</td>
       <td class="${pc(m.ft_pnl)}">${fp(m.ft_pnl)}</td>
       <td class="${pfCls}">${ff(m.ft_pf)}</td>
       <td>${m.ft_win_rate!=null?ff(m.ft_win_rate,1)+'%':'—'}</td>

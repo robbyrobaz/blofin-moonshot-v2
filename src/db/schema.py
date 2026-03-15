@@ -120,6 +120,8 @@ CREATE TABLE IF NOT EXISTS tournament_models (
     ft_trades INTEGER DEFAULT 0,
     ft_wins INTEGER DEFAULT 0,
     ft_pnl REAL DEFAULT 0.0,
+    ft_pnl_per_day REAL DEFAULT 0.0,
+    ft_pnl_last_7d REAL DEFAULT 0.0,
     ft_pf REAL DEFAULT 0.0,
     ft_max_drawdown_pct REAL DEFAULT 0.0,
     is_paused INTEGER DEFAULT 0,
@@ -154,6 +156,7 @@ CREATE TABLE IF NOT EXISTS positions (
     FOREIGN KEY (model_id) REFERENCES tournament_models(model_id)
 );
 CREATE INDEX IF NOT EXISTS idx_positions_model ON positions(model_id, status);
+CREATE INDEX IF NOT EXISTS idx_positions_model_exit_ts ON positions(model_id, exit_ts);
 CREATE INDEX IF NOT EXISTS idx_positions_symbol ON positions(symbol, status);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_positions_unique_open
     ON positions(symbol, direction, is_champion_trade)
@@ -209,6 +212,28 @@ def init_db(db_path=None) -> sqlite3.Connection:
     """Create all tables if they don't exist. Returns connection."""
     conn = get_db(db_path)
     conn.executescript(SCHEMA_SQL)
+    _ensure_tournament_model_columns(conn)
     conn.commit()
     log.info("Database initialized at %s", db_path or DB_PATH)
     return conn
+
+
+def _ensure_tournament_model_columns(conn: sqlite3.Connection) -> None:
+    """Additive migration for tournament_models columns on existing DBs."""
+    cols = {
+        row["name"]
+        for row in conn.execute("PRAGMA table_info(tournament_models)").fetchall()
+    }
+    migrations = [
+        (
+            "ft_pnl_per_day",
+            "ALTER TABLE tournament_models ADD COLUMN ft_pnl_per_day REAL DEFAULT 0.0",
+        ),
+        (
+            "ft_pnl_last_7d",
+            "ALTER TABLE tournament_models ADD COLUMN ft_pnl_last_7d REAL DEFAULT 0.0",
+        ),
+    ]
+    for col_name, sql in migrations:
+        if col_name not in cols:
+            conn.execute(sql)

@@ -8,7 +8,7 @@ Steps:
    Aggregate bt_pf stored in DB for all models regardless of pass/fail.
 2. For each model that passes BT: save new pkl, run 14-day FT simulation.
 3. Update ft_* in DB.
-4. Re-crown champion based on ft_pnl.
+4. Re-crown champion based on recent normalized FT performance.
 
 Scope flags:
   --skip-retired       Only process champion + forward_test models (~27 models, fast)
@@ -56,7 +56,11 @@ from src.scoring.thresholds import effective_entry_threshold
 from src.tournament.backtest import backtest_challenger
 from src.tournament.champion import crown_champion_if_ready
 from src.tournament.challenger import FEATURE_SUBSETS
-from src.tournament.forward_test import _compute_exit_pnl, _get_feature_values
+from src.tournament.forward_test import (
+    _compute_exit_pnl,
+    _compute_ft_pnl_metrics,
+    _get_feature_values,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -425,12 +429,24 @@ def main():
         print(f"  FT 14d: trades={ft_stats['ft_trades']} "
               f"pf={ft_stats['ft_pf']:.3f} pnl={ft_stats['ft_pnl']:.4f}")
 
+        ft_pnl_per_day, ft_pnl_last_7d = _compute_ft_pnl_metrics(
+            db, model_id, ft_stats["ft_pnl"]
+        )
         db.execute(
             """UPDATE tournament_models
-               SET ft_trades=?, ft_wins=?, ft_pnl=?, ft_pf=?, ft_max_drawdown_pct=?
+               SET ft_trades=?, ft_wins=?, ft_pnl=?, ft_pnl_per_day=?,
+                   ft_pnl_last_7d=?, ft_pf=?, ft_max_drawdown_pct=?
                WHERE model_id=?""",
-            (ft_stats["ft_trades"], ft_stats["ft_wins"], ft_stats["ft_pnl"],
-             ft_stats["ft_pf"], ft_stats["ft_max_drawdown_pct"], model_id),
+            (
+                ft_stats["ft_trades"],
+                ft_stats["ft_wins"],
+                ft_stats["ft_pnl"],
+                ft_pnl_per_day,
+                ft_pnl_last_7d,
+                ft_stats["ft_pf"],
+                ft_stats["ft_max_drawdown_pct"],
+                model_id,
+            ),
         )
         db.commit()
         ft_done += 1
@@ -445,19 +461,20 @@ def main():
     crown_champion_if_ready(db)
 
     # ---- Final leaderboard ----
-    print("\n[LEADERBOARD] Top 10 FT models by ft_pnl:")
+    print("\n[LEADERBOARD] Top 10 FT models by ft_pnl_last_7d:")
     for r in db.execute(
         """SELECT model_id, direction, stage, bt_pf, bt_precision, bt_trades,
-                  ft_trades, ft_pf, ft_pnl, ft_wins
+                  ft_trades, ft_pf, ft_pnl, ft_pnl_per_day, ft_pnl_last_7d, ft_wins
            FROM tournament_models
            WHERE stage IN ('forward_test','champion')
              AND ft_trades >= 5
-           ORDER BY ft_pnl DESC
+           ORDER BY ft_pnl_last_7d DESC, ft_pnl_per_day DESC
            LIMIT 10"""
     ).fetchall():
         print(f"  {r['model_id']} {r['stage']:12} {r['direction']:5} "
               f"bt_pf={r['bt_pf']:.3f} | "
-              f"ft: {r['ft_trades']}t pf={r['ft_pf']:.2f} pnl={r['ft_pnl']:.4f}")
+              f"ft: {r['ft_trades']}t pf={r['ft_pf']:.2f} pnl={r['ft_pnl']:.4f} "
+              f"7d={r['ft_pnl_last_7d']:.4f} day={r['ft_pnl_per_day']:.4f}")
 
     print("\n[DONE] Complete. Restart moonshot-v2.service to pick up new champion.")
 

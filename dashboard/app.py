@@ -11,8 +11,10 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
+import sys
+sys.path.insert(0, '..')
 import config
 
 app = Flask(__name__)
@@ -101,11 +103,12 @@ def _rows_to_list(rows):
 def _load_leaderboard(conn):
     sql = """
         SELECT model_id, direction, model_type, stage, bt_pf, bt_precision,
-               bt_trades, ft_trades, ft_pnl, ft_pf, ft_max_drawdown_pct,
+               bt_trades, ft_trades, ft_pnl, ft_pnl_per_day, ft_pnl_last_7d,
+               ft_pf, ft_max_drawdown_pct,
                is_paused, created_at
         FROM tournament_models
         WHERE stage IN ('forward_test', 'champion')
-        ORDER BY ft_pnl DESC
+        ORDER BY ft_pnl_last_7d DESC, ft_pnl_per_day DESC, ft_pnl DESC
     """
     return _safe_query(conn, sql)
 
@@ -137,6 +140,21 @@ def _load_recent_closes(conn):
         ORDER BY exit_ts DESC
     """
     return _safe_query(conn, sql, (cutoff_ms,))
+
+
+def _pnl_timeseries_window_to_cutoff(window: str) -> int | None:
+    now_ms = int(time.time() * 1000)
+    mapping = {
+        "7d": 7 * 24 * 3600 * 1000,
+        "30d": 30 * 24 * 3600 * 1000,
+        "all": None,
+    }
+    span = mapping.get(window)
+    if window not in mapping:
+        raise ValueError(f"unsupported window: {window}")
+    if span is None:
+        return None
+    return now_ms - span
 
 
 
@@ -313,13 +331,16 @@ def api_vault():
     try:
         sql = """
             SELECT model_id, direction, stage, model_type,
-                   ft_pnl, ft_pf, ft_trades, ft_wins, ft_max_drawdown_pct,
+                   ft_pnl, ft_pnl_per_day, ft_pnl_last_7d, ft_pf,
+                   ft_trades, ft_wins, ft_max_drawdown_pct,
                    is_paused, bt_pf, bt_precision, promoted_to_ft_at
             FROM tournament_models
             WHERE (stage = 'champion')
                OR (stage = 'forward_test' AND ft_trades >= 100)
             ORDER BY
                 CASE WHEN stage = 'champion' THEN 0 ELSE 1 END ASC,
+                ft_pnl_last_7d DESC,
+                ft_pnl_per_day DESC,
                 ft_pnl DESC
             LIMIT 5
         """
@@ -338,6 +359,8 @@ def api_vault():
                 "stage": r["stage"],
                 "model_type": r["model_type"],
                 "ft_pnl": r["ft_pnl"],
+                "ft_pnl_per_day": r["ft_pnl_per_day"],
+                "ft_pnl_last_7d": r["ft_pnl_last_7d"],
                 "ft_pf": r["ft_pf"],
                 "ft_trades": ft_trades,
                 "ft_wins": ft_wins,
@@ -364,11 +387,12 @@ def api_models():
     try:
         sql = """
             SELECT model_id, direction, stage, model_type,
-                   ft_pnl, ft_pf, ft_trades, ft_wins, ft_max_drawdown_pct,
+                   ft_pnl, ft_pnl_per_day, ft_pnl_last_7d, ft_pf,
+                   ft_trades, ft_wins, ft_max_drawdown_pct,
                    is_paused, bt_pf, bt_precision, promoted_to_ft_at
             FROM tournament_models
             WHERE stage IN ('forward_test', 'champion')
-            ORDER BY ft_pnl DESC
+            ORDER BY ft_pnl_last_7d DESC, ft_pnl_per_day DESC, ft_pnl DESC
         """
         rows = _safe_query(conn, sql)
         now_ms = time.time() * 1000
@@ -384,6 +408,8 @@ def api_models():
                 "stage": r["stage"],
                 "model_type": r["model_type"],
                 "ft_pnl": r["ft_pnl"],
+                "ft_pnl_per_day": r["ft_pnl_per_day"],
+                "ft_pnl_last_7d": r["ft_pnl_last_7d"],
                 "ft_pf": r["ft_pf"],
                 "ft_trades": ft_trades,
                 "ft_wins": ft_wins,
@@ -395,6 +421,64 @@ def api_models():
                 "bt_precision": r["bt_precision"],
             })
         return jsonify({"models": result, "count": len(result)})
+    finally:
+        conn.close()
+
+
+@app.route("/api/models/<model_id>/pnl-timeseries")
+def api_model_pnl_timeseries(model_id):
+    """Daily closed-trade PnL aggregation for one model."""
+    window = request.args.get("window", "7d")
+    try:
+        cutoff_ms = _pnl_timeseries_window_to_cutoff(window)
+    except ValueError:
+        return jsonify({"error": "window must be one of 7d, 30d, all"}), 400
+
+    try:
+        conn = _ro_db()
+    except sqlite3.OperationalError:
+        return jsonify({"error": "database not found"}), 503
+
+    try:
+        where = [
+            "model_id = ?",
+            "status = 'closed'",
+            "is_champion_trade = 0",
+            "exit_ts IS NOT NULL",
+        ]
+        params = [model_id]
+        if cutoff_ms is not None:
+            where.append("exit_ts >= ?")
+            params.append(cutoff_ms)
+
+        sql = f"""
+            SELECT date(exit_ts / 1000, 'unixepoch') AS bucket,
+                   COALESCE(SUM(pnl_pct), 0.0) AS pnl_pct_sum,
+                   COUNT(*) AS trade_count,
+                   COALESCE(AVG(pnl_pct), 0.0) AS avg_pnl_pct
+            FROM positions
+            WHERE {' AND '.join(where)}
+            GROUP BY bucket
+            ORDER BY bucket ASC
+        """
+        rows = _safe_query(conn, sql, tuple(params))
+        series = [
+            {
+                "bucket": r["bucket"],
+                "pnl_pct_sum": r["pnl_pct_sum"],
+                "trade_count": r["trade_count"],
+                "avg_pnl_pct": r["avg_pnl_pct"],
+            }
+            for r in rows
+        ]
+        return jsonify(
+            {
+                "model_id": model_id,
+                "window": window,
+                "series": series,
+                "count": len(series),
+            }
+        )
     finally:
         conn.close()
 

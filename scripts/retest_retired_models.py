@@ -33,6 +33,7 @@ from src.scoring.thresholds import effective_entry_threshold
 from src.tournament.challenger import FEATURE_SUBSETS
 from src.tournament.forward_test import (
     _compute_exit_pnl,
+    _compute_ft_pnl_metrics,
     _get_feature_values,
     _load_model,
 )
@@ -296,11 +297,15 @@ def _replace_model_positions(db, model_id, closed_positions):
 
 def _update_model_record(db, model_id, stats, unretire):
     now_ms = int(time.time() * 1000)
+    ft_pnl_per_day, ft_pnl_last_7d = _compute_ft_pnl_metrics(
+        db, model_id, stats["ft_pnl"]
+    )
     if unretire:
         db.execute(
             """UPDATE tournament_models
-               SET ft_trades = ?, ft_wins = ?, ft_pnl = ?, ft_pf = ?,
-                   ft_max_drawdown_pct = ?, stage = 'forward_test',
+               SET ft_trades = ?, ft_wins = ?, ft_pnl = ?, ft_pnl_per_day = ?,
+                   ft_pnl_last_7d = ?, ft_pf = ?, ft_max_drawdown_pct = ?,
+                   stage = 'forward_test',
                    retired_at = NULL, retire_reason = NULL, promoted_to_ft_at = ?,
                    is_paused = 0, paused_until = NULL
                WHERE model_id = ?""",
@@ -308,6 +313,8 @@ def _update_model_record(db, model_id, stats, unretire):
                 stats["ft_trades"],
                 stats["ft_wins"],
                 stats["ft_pnl"],
+                ft_pnl_per_day,
+                ft_pnl_last_7d,
                 stats["ft_pf"],
                 stats["ft_max_drawdown_pct"],
                 now_ms,
@@ -317,13 +324,15 @@ def _update_model_record(db, model_id, stats, unretire):
     else:
         db.execute(
             """UPDATE tournament_models
-               SET ft_trades = ?, ft_wins = ?, ft_pnl = ?, ft_pf = ?,
-                   ft_max_drawdown_pct = ?
+               SET ft_trades = ?, ft_wins = ?, ft_pnl = ?, ft_pnl_per_day = ?,
+                   ft_pnl_last_7d = ?, ft_pf = ?, ft_max_drawdown_pct = ?
                WHERE model_id = ?""",
             (
                 stats["ft_trades"],
                 stats["ft_wins"],
                 stats["ft_pnl"],
+                ft_pnl_per_day,
+                ft_pnl_last_7d,
                 stats["ft_pf"],
                 stats["ft_max_drawdown_pct"],
                 model_id,
