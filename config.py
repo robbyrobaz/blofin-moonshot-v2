@@ -85,7 +85,8 @@ MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 3, int)
 MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 6, int)
 BASE_POSITION_PCT = _env("BASE_POSITION_PCT", 0.02, float)
 MAX_POSITION_PCT = _env("MAX_POSITION_PCT", 0.05, float)
-NEW_LISTING_BOOST = _env("NEW_LISTING_BOOST", 1.5, float)
+# 2026-03-15: Raised new listing boost 1.5x→5x — prioritize coins <30d old
+NEW_LISTING_BOOST = _env("NEW_LISTING_BOOST", 5.0, float)
 NEW_LISTING_DAYS = _env("NEW_LISTING_DAYS", 30, int)
 TIME_STOP_DAYS = _env("TIME_STOP_DAYS", 7, int)
 TIME_STOP_BARS = _env("TIME_STOP_BARS", 42, int)  # 7d at 4h
@@ -147,4 +148,7 @@ LOG_LEVEL = _env("LOG_LEVEL", "INFO")
 LOG_FORMAT = "%(asctime)s %(levelname)-8s %(name)s  %(message)s"
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL), format=LOG_FORMAT)
+log = logging.getLogger("moonshot")
+"moonshot")
+l=getattr(logging, LOG_LEVEL), format=LOG_FORMAT)
 log = logging.getLogger("moonshot")
