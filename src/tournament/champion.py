@@ -14,11 +14,14 @@ import joblib
 
 from config import (
     BOOTSTRAP_PF_LOWER_BOUND,
+    BOOTSTRAP_PF_LOWER_BOUND_LONG,
     CHAMPION_BEAT_MARGIN,
     CHAMPION_LONG_PATH,
     CHAMPION_SHORT_PATH,
     MIN_BT_PF,
+    MIN_BT_PF_LONG,
     MIN_BT_PRECISION,
+    MIN_BT_PRECISION_LONG,
     MIN_BT_TRADES,
     MIN_FT_PF_KEEP,
     MIN_FT_TRADES_EVAL,
@@ -89,6 +92,11 @@ def crown_champion_if_ready(db):
         current_recent_pnl = current["ft_pnl_last_7d"] if current else 0.0
         current_id = current["model_id"] if current else None
 
+        # Select direction-specific gates
+        min_bt_pf = MIN_BT_PF_LONG if direction == "long" else MIN_BT_PF
+        min_bt_precision = MIN_BT_PRECISION_LONG if direction == "long" else MIN_BT_PRECISION
+        min_bootstrap = BOOTSTRAP_PF_LOWER_BOUND_LONG if direction == "long" else BOOTSTRAP_PF_LOWER_BOUND
+
         # Find best FT candidate (ranked by recent pnl, then pnl/day, then pf, then trades)
         # Also filter by backtest gates to prevent regime-shift bugs
         candidate = db.execute(
@@ -104,11 +112,12 @@ def crown_champion_if_ready(db):
                  AND bt_ci_lower >= ?
                ORDER BY ft_pnl_last_7d DESC, ft_pnl_per_day DESC, ft_pf DESC, ft_trades DESC
                LIMIT 1""",
-            (direction, MIN_BT_PF, MIN_BT_PRECISION, MIN_BT_TRADES, BOOTSTRAP_PF_LOWER_BOUND),
+            (direction, min_bt_pf, min_bt_precision, MIN_BT_TRADES, min_bootstrap),
         ).fetchone()
 
         if candidate is None:
-            log.debug("crown_champion %s: no qualifying candidates (failed BT gates)", direction)
+            log.debug("crown_champion %s: no qualifying candidates (failed BT gates: pf>=%.2f, prec>=%.2f, ci>=%.2f)",
+                      direction, min_bt_pf, min_bt_precision, min_bootstrap)
             continue
 
         cand_pnl = candidate["ft_pnl"]
