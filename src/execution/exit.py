@@ -4,7 +4,11 @@ Checked every 4h cycle. Evaluates all open positions against six exit
 conditions in strict priority order (first match wins).
 """
 
+import json
 import sqlite3
+
+import joblib
+import numpy as np
 
 import config
 from config import log
@@ -293,8 +297,8 @@ def check_exits(
             continue
 
         # ── 5. INVALIDATION ──────────────────────────────────────────────
-        # Option C: Disable invalidation for first 50 trades (TOURNAMENT_PHILOSOPHY.md)
-        # Let models prove profitability before applying invalidation
+        # Option A from TOURNAMENT_PHILOSOPHY.md: Lock features at entry
+        # Re-score using STORED entry_features to prevent drift
         if bars_since_entry >= config.INVALIDATION_GRACE_BARS:
             # Check model's FT trade count
             model_stats = db.execute(
@@ -306,19 +310,49 @@ def check_exits(
 
             # Only apply invalidation if model has 50+ FT trades
             if model_ft_trades >= 50:
-                inv_threshold = _load_invalidation_threshold(db, model_id)
-                entry_score = pos["entry_ml_score"]
-                if (
-                    inv_threshold is not None
-                    and entry_score is not None
-                    and entry_score < inv_threshold
-                ):
-                    pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
-                    _close_position(
-                        db, pos, current_price, "INVALIDATION", pnl, ts_ms
-                    )
-                    counts["exits_invalidation"] += 1
-                    continue
+                inv_row = db.execute(
+                    "SELECT invalidation_threshold, feature_set FROM tournament_models WHERE model_id = ?",
+                    (model_id,)
+                ).fetchone()
+
+                if inv_row and inv_row["invalidation_threshold"] is not None and pos["entry_features"]:
+                    try:
+                        # Parse stored entry features
+                        entry_features_data = json.loads(pos["entry_features"])
+                        feature_values_dict = entry_features_data.get("feature_values", {})
+
+                        # Get model's expected feature order (NOT the sorted order from entry_features!)
+                        from src.tournament.challenger import resolve_feature_set
+                        model_feature_names = resolve_feature_set(inv_row["feature_set"])
+
+                        # Build feature vector in MODEL's expected order using STORED values
+                        if isinstance(feature_values_dict, dict):
+                            feature_vector = [feature_values_dict.get(fn) for fn in model_feature_names]
+                        else:
+                            # Legacy format: assume entry_features are in correct order
+                            feature_vector = list(feature_values_dict)
+
+                        # Skip if any features are missing
+                        if not any(v is None for v in feature_vector):
+                            # Load model and re-score with stored features
+                            model_path = config.TOURNAMENT_DIR / f"{model_id}.pkl"
+                            if model_path.exists():
+                                model = joblib.load(model_path)
+                                X = np.array([feature_vector], dtype=np.float32)
+                                current_score = float(model.predict_proba(X)[:, 1][0])
+
+                                # Exit if re-scored position is below invalidation threshold
+                                if current_score < inv_row["invalidation_threshold"]:
+                                    log.info("INVALIDATION: %s %s pos %d score %.3f < threshold %.3f (stored features)",
+                                             direction.upper(), symbol, position_id, current_score, inv_row["invalidation_threshold"])
+                                    pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
+                                    _close_position(
+                                        db, pos, current_price, "INVALIDATION", pnl, ts_ms
+                                    )
+                                    counts["exits_invalidation"] += 1
+                                    continue
+                    except (json.JSONDecodeError, KeyError, IndexError, ValueError, FileNotFoundError) as e:
+                        log.warning("INVALIDATION: failed to parse entry_features for pos %d: %s", position_id, e)
 
         # ── 6. REGIME_EXIT ───────────────────────────────────────────────
         if regime == "bear" and direction == "long":

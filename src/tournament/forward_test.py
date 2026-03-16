@@ -145,19 +145,47 @@ def _check_exit_conditions(db, pos, ts_ms: int, current_price: float) -> str | N
     if bars_elapsed >= TIME_STOP_BARS:
         return "time"
 
-    # Invalidation: re-score, exit if below threshold
-    inv_row = db.execute(
-        "SELECT invalidation_threshold FROM tournament_models WHERE model_id = ?",
-        (pos["model_id"],),
-    ).fetchone()
-    if (
-        inv_row
-        and inv_row["invalidation_threshold"] is not None
-        and pos["entry_ml_score"] is not None
-        and bars_elapsed >= INVALIDATION_GRACE_BARS
-        and pos["entry_ml_score"] < inv_row["invalidation_threshold"]
-    ):
-        return "invalidation"
+    # Invalidation: re-score using STORED entry_features (no drift)
+    # Option A from TOURNAMENT_PHILOSOPHY.md — lock features at entry
+    if bars_elapsed >= INVALIDATION_GRACE_BARS:
+        inv_row = db.execute(
+            "SELECT invalidation_threshold, feature_set FROM tournament_models WHERE model_id = ?",
+            (pos["model_id"],),
+        ).fetchone()
+
+        if inv_row and inv_row["invalidation_threshold"] is not None and pos["entry_features"]:
+            try:
+                # Parse stored entry features
+                entry_features_data = json.loads(pos["entry_features"])
+                feature_values_dict = entry_features_data.get("feature_values", {})
+
+                # Get model's expected feature order (NOT the sorted order from entry_features!)
+                model_feature_names = _resolve_feature_names(inv_row["feature_set"])
+
+                # Build feature vector in MODEL's expected order using STORED values
+                if isinstance(feature_values_dict, dict):
+                    feature_vector = [feature_values_dict.get(fn) for fn in model_feature_names]
+                else:
+                    # Legacy format: assume entry_features are in correct order
+                    feature_vector = list(feature_values_dict)
+
+                # Skip if any features are missing
+                if any(v is None for v in feature_vector):
+                    log.warning("FT invalidation: missing features for pos %d, skipping", pos["id"])
+                else:
+                    # Load model and re-score with stored features
+                    model = _load_model(pos["model_id"])
+                    if model is not None:
+                        X = np.array([feature_vector], dtype=np.float32)
+                        current_score = float(model.predict_proba(X)[:, 1][0])
+
+                        # Exit if re-scored position is below invalidation threshold
+                        if current_score < inv_row["invalidation_threshold"]:
+                            log.info("FT invalidation: pos %d score %.3f < threshold %.3f (stored features)",
+                                     pos["id"], current_score, inv_row["invalidation_threshold"])
+                            return "invalidation"
+            except (json.JSONDecodeError, KeyError, IndexError, ValueError) as e:
+                log.warning("FT invalidation: failed to parse entry_features for pos %d: %s", pos["id"], e)
 
     return None
 
