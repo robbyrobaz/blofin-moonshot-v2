@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 11:45 MST
+> Last updated: 2026-03-16 12:05 MST
 
 ## Moonshot v2 — Tournament Status
 
@@ -41,17 +41,20 @@
 - `moonshot-v2-dashboard.service` — ACTIVE (port 8893)
 - Dashboard: http://127.0.0.1:8893/ (HTTP 200)
 
-### Cycle Performance (Mar 16 12:03 MST)
-**Backtest queue buildup — FIXED:**
-- 224 models accumulated, `backtest_new_challengers()` processed ALL serially
-- Added batch limit (20/cycle) — commit 4cd2f59
-- Prevents infinite backtest loops
+### Cycle Performance (Mar 16 12:05 MST — FINAL)
 
-**Extended data fetch — EXPECTED SLOW:**
-- 470 symbols × 4 endpoints × 2.5 req/sec = 10+ min/cycle
-- Cycle 121: 11:49 start → 11:55 candles → 12:00 funding (5min) → killed 12:03
-- NOT a bug — rate limits force serial fetching
-- Cycle 122 running since 12:03, should complete naturally
+**Root cause of "hangs":** Crypto agent kept KILLING cycles mid-run to "investigate"
+- Killed Cycle 120 at 100% CPU (was in backtest, working normally)
+- Killed Cycle 121 at 12:03 (was fetching funding data, working normally)
+- Result: looks like cycles never complete, but that's because they keep getting killed
+
+**Real issues FIXED:**
+1. Backtest queue: 224 models, batch limit (20/cycle) added — commit 4cd2f59
+2. Extended data fetch: 10+ min/cycle expected (470 symbols × rate limits)
+
+**Lesson:** LET CYCLES COMPLETE. They're slow (15-20 min) but not broken.
+- Cycle 122 started 12:03, running uninterrupted
+- Stop investigating, stop killing — just monitor completion
 
 ## Blofin v1 Stack
 
