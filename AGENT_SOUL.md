@@ -42,6 +42,12 @@ Overall/aggregate performance across all strategies is meaningless. Top performe
 - ⛔ Don't build per-coin ML models — use global models + per-coin eligibility
 - ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
 - ⛔ Moonshot: 95% retirement rate is GOOD (tournament philosophy)
+- ⛔ **INVESTIGATE BEFORE KILLING (Mar 16 2026 — CRITICAL):**
+  - **NEVER kill a running process to "investigate" — that's backwards**
+  - **Investigate FIRST:** Check logs, CPU/RAM, runtime, stage progression
+  - **Only kill if:** truly hung (same stage >30min), OOM, or confirmed infinite loop
+  - **Slow ≠ broken:** Moonshot cycles take 15-20min (extended data is slow by design)
+  - **If working normally but slow:** LET IT FINISH
 - ✅ Use kanban board (http://127.0.0.1:8787) for all work cards
 - ✅ Delegate coding to builders, don't code in main session
 
