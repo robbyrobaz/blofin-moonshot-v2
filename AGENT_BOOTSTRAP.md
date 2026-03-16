@@ -2,7 +2,21 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 12:45 MST (crypto heartbeat)
+> Last updated: 2026-03-16 13:29 MST
+
+## Session Summary (Mar 16 2026)
+
+**Major fixes deployed:**
+1. ✅ Moonshot cycle hangs RESOLVED — batch limit (20 models/cycle) prevents backtest infinite loops
+2. ✅ New listing auto-entry WORKING — `days_since_listing` computation fixed, CFG-USDT entered
+3. ✅ Cycle 122 completed: 64min, 0 errors, champion promoted (de44f72dbb01 PF 2.22)
+4. ✅ Historical backfill running: 107/469 symbols (22.8%), ~60h remaining
+5. ✅ Agent context persistence: all 5 files × 3 agents symlinked to repos (edits persist, git-tracked)
+
+**Critical lessons learned:**
+- ⛔ **INVESTIGATE BEFORE KILLING** — slow ≠ broken. Moonshot cycles take 60+ min by design.
+- ⛔ Blofin v1 is LIVE — never claim "pipeline stopped" without checking services first
+- ⛔ Always verify current state before making claims about what's running/broken
 
 ## Moonshot v2 — Tournament Status
 
