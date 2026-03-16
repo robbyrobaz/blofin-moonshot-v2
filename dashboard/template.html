@@ -37,15 +37,19 @@ a{color:var(--blue);text-decoration:none}
 .sec{font-size:15px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;padding:6px 0 3px;border-bottom:1px solid var(--border);margin-bottom:3px}
 
 /* Tables — ultra-compact */
-.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
 table{width:100%;border-collapse:collapse;font-size:15px}
 th{text-align:left;padding:2px 5px;color:var(--t2);font-weight:600;white-space:nowrap;border-bottom:1px solid var(--border);font-size:13px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none}
 th:hover{color:var(--blue)}
 th.sorted-asc::after{content:' \u25B2';font-size:10px}
 th.sorted-desc::after{content:' \u25BC';font-size:10px}
+th:first-child{position:sticky;left:0;background:var(--card);z-index:2;box-shadow:2px 0 4px rgba(0,0,0,.15)}
 td{padding:2px 5px;white-space:nowrap;border-bottom:1px solid rgba(15,52,96,.3)}
+td:first-child{position:sticky;left:0;background:var(--card);z-index:1;box-shadow:2px 0 4px rgba(0,0,0,.15)}
 tr:hover td{background:rgba(15,52,96,.25)}
+tr:hover td:first-child{background:rgba(15,52,96,.25)}
 tr.champ td{background:rgba(255,215,0,.04)}
+tr.champ td:first-child{background:rgba(255,215,0,.04)}
 td.mono{font-family:'Courier New',monospace;font-size:13px}
 
 /* Direction badges */
@@ -71,7 +75,7 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
 .btn:hover{background:rgba(15,52,96,.5)}
 
 /* Sparklines */
-.spark{display:inline-block;vertical-align:middle;width:60px;height:16px}
+.spark{display:inline-block;vertical-align:middle;width:60px;height:16px;background:rgba(0,0,0,.15);border-radius:2px;padding:1px}
 .spark-loading{color:var(--t2);font-size:10px}
 
 /* Grid layout */
@@ -123,9 +127,13 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
 
 /* Row color-coding based on 7D PnL */
 tr.pnl-positive-high td{background:rgba(0,230,118,.08)!important}
+tr.pnl-positive-high td:first-child{background:rgba(0,230,118,.08)!important}
 tr.pnl-positive-low td{background:rgba(0,230,118,.04)!important}
+tr.pnl-positive-low td:first-child{background:rgba(0,230,118,.04)!important}
 tr.pnl-negative-low td{background:rgba(255,82,82,.04)!important}
+tr.pnl-negative-low td:first-child{background:rgba(255,82,82,.04)!important}
 tr.pnl-negative-high td{background:rgba(255,82,82,.08)!important}
+tr.pnl-negative-high td:first-child{background:rgba(255,82,82,.08)!important}
 </style>
 </head>
 <body>
@@ -203,7 +211,7 @@ async function api(ep){const r=await fetch(ep);if(!r.ok)throw new Error('HTTP '+
 function generateSparklineSVG(series){
   if(!series||!series.length)return '<span class="spark-loading">—</span>';
 
-  const w=60,h=16,pad=1;
+  const w=60,h=16,pad=2;
   const values=series.map(d=>d.pnl_pct_sum||0);
 
   // Cumulative PnL
@@ -222,7 +230,17 @@ function generateSparklineSVG(series){
 
   const color=cumulative>=0?'var(--green)':'var(--red)';
 
+  // Add zero baseline
+  const zeroY=h-pad-((0-minV)/range)*(h-2*pad);
+  const baseline=minV<0&&maxV>0?`<line x1="${pad}" y1="${zeroY.toFixed(1)}" x2="${w-pad}" y2="${zeroY.toFixed(1)}" stroke="rgba(255,255,255,0.15)" stroke-width="0.5" stroke-dasharray="1,1"/>`:'';
+
+  // Area fill under/over curve
+  const areaPoints=`${pad},${zeroY} ${points} ${w-pad},${zeroY}`;
+  const fillOpacity=0.2;
+
   return`<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    ${baseline}
+    <polygon fill="${color}" opacity="${fillOpacity}" points="${areaPoints}"/>
     <polyline fill="none" stroke="${color}" stroke-width="1.5" points="${points}"/>
   </svg>`;
 }

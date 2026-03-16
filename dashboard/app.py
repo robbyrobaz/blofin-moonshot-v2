@@ -969,6 +969,132 @@ def api_health():
         conn.close()
 
 
+@app.route("/api/charts/champion-equity")
+@cached(cache=_api_cache, key=lambda: hashkey("champion_equity"))
+def api_champion_equity():
+    """Champion equity curve: cumulative PnL over time."""
+    try:
+        conn = _ro_db()
+    except sqlite3.OperationalError:
+        return jsonify({"error": "database not found"}), 503
+
+    try:
+        # Get current champion model_id
+        champ_sql = """
+            SELECT model_id FROM tournament_models
+            WHERE stage = 'champion'
+            ORDER BY promoted_to_champion_at DESC
+            LIMIT 1
+        """
+        champ_row = _safe_query(conn, champ_sql, fetchone=True)
+
+        if not champ_row:
+            return jsonify({"labels": [], "data": [], "champion": None})
+
+        champion_id = champ_row["model_id"]
+
+        # Get daily cumulative PnL for champion
+        sql = """
+            SELECT date(exit_ts / 1000, 'unixepoch') AS date,
+                   pnl_pct
+            FROM positions
+            WHERE model_id = ?
+              AND status = 'closed'
+              AND exit_ts IS NOT NULL
+            ORDER BY exit_ts ASC
+        """
+        rows = _safe_query(conn, sql, (champion_id,))
+
+        # Calculate cumulative PnL
+        cumulative = 0.0
+        labels = []
+        data = []
+
+        for r in rows:
+            cumulative += r["pnl_pct"] or 0.0
+            labels.append(r["date"])
+            data.append(round(cumulative, 2))
+
+        return jsonify({
+            "labels": labels,
+            "data": data,
+            "champion": champion_id,
+        })
+    finally:
+        conn.close()
+
+
+@app.route("/api/charts/daily-pnl")
+@cached(cache=_api_cache, key=lambda: hashkey("daily_pnl"))
+def api_daily_pnl():
+    """Daily PnL bar chart: last 30 days aggregate PnL."""
+    try:
+        conn = _ro_db()
+    except sqlite3.OperationalError:
+        return jsonify({"error": "database not found"}), 503
+
+    try:
+        cutoff_ms = int((time.time() - 30 * 86400) * 1000)
+        sql = """
+            SELECT date(exit_ts / 1000, 'unixepoch') AS date,
+                   COALESCE(SUM(pnl_pct), 0.0) AS pnl_pct_sum
+            FROM positions
+            WHERE status = 'closed'
+              AND exit_ts >= ?
+              AND is_champion_trade = 0
+              AND model_id IN (
+                  SELECT model_id FROM tournament_models
+                  WHERE stage IN ('forward_test', 'champion')
+              )
+            GROUP BY date
+            ORDER BY date ASC
+        """
+        rows = _safe_query(conn, sql, (cutoff_ms,))
+
+        labels = [r["date"] for r in rows]
+        data = [round(r["pnl_pct_sum"], 2) for r in rows]
+
+        return jsonify({
+            "labels": labels,
+            "data": data,
+        })
+    finally:
+        conn.close()
+
+
+@app.route("/api/charts/model-comparison")
+@cached(cache=_api_cache, key=lambda: hashkey("model_comparison"))
+def api_model_comparison():
+    """Model comparison chart: top 5 FT models by total PnL."""
+    try:
+        conn = _ro_db()
+    except sqlite3.OperationalError:
+        return jsonify({"error": "database not found"}), 503
+
+    try:
+        sql = """
+            SELECT model_id, ft_pnl, direction, stage
+            FROM tournament_models
+            WHERE stage IN ('forward_test', 'champion')
+              AND ft_pnl IS NOT NULL
+            ORDER BY ft_pnl DESC
+            LIMIT 5
+        """
+        rows = _safe_query(conn, sql)
+
+        labels = [r["model_id"][:8] + ("★" if r["stage"] == "champion" else "") for r in rows]
+        data = [round(r["ft_pnl"], 2) for r in rows]
+        directions = [r["direction"] for r in rows]
+
+        return jsonify({
+            "labels": labels,
+            "data": data,
+            "directions": directions,
+        })
+    finally:
+        conn.close()
+
+
 # ── Entry Point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
