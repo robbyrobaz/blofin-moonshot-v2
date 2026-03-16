@@ -13,12 +13,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from flask import Flask, jsonify, request
+from cachetools import TTLCache, cached
+from cachetools.keys import hashkey
 
 import sys
 sys.path.insert(0, '..')
 import config
 
 app = Flask(__name__)
+
+# Cache with 30s TTL for API endpoints
+_api_cache = TTLCache(maxsize=50, ttl=30)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -161,14 +166,15 @@ def _pnl_timeseries_window_to_cutoff(window: str) -> int | None:
 
 def _load_regime(conn):
     # BTC 30-day return from candles (180 × 4h bars ≈ 30 days)
+    # Use exact symbol match for index efficiency
     btc_sql = """
         SELECT close FROM candles
-        WHERE symbol LIKE '%BTC%'
+        WHERE symbol = 'BTCUSDT'
         ORDER BY ts DESC LIMIT 1
     """
     btc_30d_sql = """
         SELECT close FROM candles
-        WHERE symbol LIKE '%BTC%'
+        WHERE symbol = 'BTCUSDT'
         ORDER BY ts DESC LIMIT 1 OFFSET 180
     """
     latest = _safe_query(conn, btc_sql, fetchone=True)
@@ -376,6 +382,7 @@ def index():
 # ── API Routes ────────────────────────────────────────────────────────────────
 
 @app.route("/api/vault")
+@cached(cache=_api_cache, key=lambda: hashkey("vault"))
 def api_vault():
     """Top models eligible for real money: champions first, then top FT by ft_pnl (ft_trades >= 100).
 
@@ -435,6 +442,7 @@ def api_vault():
 
 
 @app.route("/api/models")
+@cached(cache=_api_cache, key=lambda: hashkey("models"))
 def api_models():
     """All FT + champion models for the master leaderboard table."""
     try:
@@ -542,6 +550,7 @@ def api_model_pnl_timeseries(model_id):
 
 
 @app.route("/api/pipeline")
+@cached(cache=_api_cache, key=lambda: hashkey("pipeline"))
 def api_pipeline():
     """Pipeline funnel counts: how many models at each stage.
 
@@ -609,6 +618,7 @@ def api_pipeline():
 
 
 @app.route("/api/rising-stars")
+@cached(cache=_api_cache, key=lambda: hashkey("rising_stars"))
 def api_rising_stars():
     """Emerging FT models with <100 trades but high profit factor (>= 2.5)."""
     try:
@@ -646,6 +656,7 @@ def api_rising_stars():
 
 
 @app.route("/api/positions")
+@cached(cache=_api_cache, key=lambda: hashkey("positions"))
 def api_positions():
     """Open positions with unrealized PnL, TP distance, and SL distance."""
     try:
@@ -690,6 +701,7 @@ def api_positions():
 
 
 @app.route("/api/recent-trades")
+@cached(cache=_api_cache, key=lambda: hashkey("recent_trades"))
 def api_recent_trades():
     """Closed trades in the last 48h with summary stats."""
     try:
@@ -757,6 +769,7 @@ def api_recent_trades():
 
 
 @app.route("/api/market")
+@cached(cache=_api_cache, key=lambda: hashkey("market"))
 def api_market():
     """Market context: regime, BTC 30d return, Fear & Greed index, external macro."""
     try:
@@ -798,7 +811,101 @@ def api_market():
         conn.close()
 
 
+@app.route("/api/portfolio")
+def api_portfolio():
+    """Portfolio-level aggregated metrics across all FT + champion models."""
+    try:
+        conn = _ro_db()
+    except sqlite3.OperationalError:
+        return jsonify({"error": "database not found"}), 503
+
+    try:
+        # Total capital allocated (open positions only)
+        capital_row = _safe_query(conn, """
+            SELECT COALESCE(SUM(size_usd), 0) as total_capital
+            FROM positions
+            WHERE status = 'open'
+              AND model_id IN (
+                  SELECT model_id FROM tournament_models
+                  WHERE stage IN ('forward_test', 'champion')
+              )
+        """, fetchone=True)
+        total_capital = capital_row["total_capital"] if capital_row else 0
+
+        # Total positions
+        positions_row = _safe_query(conn, """
+            SELECT COUNT(*) as cnt FROM positions
+            WHERE status = 'open'
+              AND model_id IN (
+                  SELECT model_id FROM tournament_models
+                  WHERE stage IN ('forward_test', 'champion')
+              )
+        """, fetchone=True)
+        total_positions = positions_row["cnt"] if positions_row else 0
+
+        # Overall PnL% and win rate (all FT models combined)
+        models_sql = """
+            SELECT
+                COALESCE(SUM(ft_pnl), 0) as total_pnl,
+                COALESCE(SUM(ft_wins), 0) as total_wins,
+                COALESCE(SUM(ft_trades), 0) as total_trades,
+                COALESCE(SUM(ft_pnl_last_7d), 0) as total_pnl_7d,
+                COALESCE(SUM(ft_pnl_per_day), 0) as total_pnl_per_day
+            FROM tournament_models
+            WHERE stage IN ('forward_test', 'champion')
+        """
+        agg = _safe_query(conn, models_sql, fetchone=True)
+
+        total_pnl = agg["total_pnl"] if agg else 0
+        total_wins = agg["total_wins"] if agg else 0
+        total_trades = agg["total_trades"] if agg else 0
+        total_pnl_7d = agg["total_pnl_7d"] if agg else 0
+        total_pnl_per_day = agg["total_pnl_per_day"] if agg else 0
+        overall_win_rate = (total_wins / total_trades * 100) if total_trades > 0 else 0
+
+        # Daily PnL trend (last 7 days) for portfolio sparkline
+        cutoff_ms = int((time.time() - 7 * 86400) * 1000)
+        pnl_series_sql = """
+            SELECT date(exit_ts / 1000, 'unixepoch') AS bucket,
+                   COALESCE(SUM(pnl_pct), 0.0) AS pnl_pct_sum,
+                   COUNT(*) AS trade_count
+            FROM positions
+            WHERE status = 'closed'
+              AND is_champion_trade = 0
+              AND exit_ts >= ?
+              AND model_id IN (
+                  SELECT model_id FROM tournament_models
+                  WHERE stage IN ('forward_test', 'champion')
+              )
+            GROUP BY bucket
+            ORDER BY bucket ASC
+        """
+        series_rows = _safe_query(conn, pnl_series_sql, (cutoff_ms,))
+        pnl_series = [
+            {
+                "bucket": r["bucket"],
+                "pnl_pct_sum": r["pnl_pct_sum"],
+                "trade_count": r["trade_count"],
+            }
+            for r in series_rows
+        ]
+
+        return jsonify({
+            "total_capital_usd": round(total_capital, 2),
+            "total_positions": total_positions,
+            "overall_pnl_pct": round(total_pnl, 2),
+            "overall_pnl_7d_pct": round(total_pnl_7d, 2),
+            "overall_pnl_per_day_pct": round(total_pnl_per_day, 2),
+            "overall_win_rate_pct": round(overall_win_rate, 2),
+            "total_trades": total_trades,
+            "pnl_series": pnl_series,
+        })
+    finally:
+        conn.close()
+
+
 @app.route("/api/health")
+@cached(cache=_api_cache, key=lambda: hashkey("health"))
 def api_health():
     """System health: DB stats, last run info, model counts, last 5 cycle durations."""
     try:

@@ -110,6 +110,22 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
 /* Health inline */
 .health-row{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--t2);padding:4px 0;border-top:1px solid var(--border);margin-top:4px}
 .health-row .ok{color:var(--green)}.health-row .bad{color:var(--red)}
+
+/* Portfolio summary */
+.portfolio{display:flex;flex-wrap:wrap;gap:6px 16px;padding:6px 8px;background:rgba(255,215,0,.03);border:1px solid rgba(255,215,0,.15);border-radius:4px;margin-bottom:6px;font-size:15px}
+.portfolio .p-item{display:flex;flex-direction:column;gap:1px}
+.portfolio .p-label{color:var(--t2);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.portfolio .p-value{color:#fff;font-weight:700;font-size:16px}
+.portfolio .p-spark{width:80px;height:20px;margin-top:2px}
+
+/* Champion badge inline */
+.champ-badge{display:inline-block;vertical-align:middle;margin-left:4px;padding:1px 5px;background:rgba(255,215,0,.25);color:var(--gold);border:1px solid rgba(255,215,0,.4);border-radius:3px;font-size:11px;font-weight:700}
+
+/* Row color-coding based on 7D PnL */
+tr.pnl-positive-high td{background:rgba(0,230,118,.08)!important}
+tr.pnl-positive-low td{background:rgba(0,230,118,.04)!important}
+tr.pnl-negative-low td{background:rgba(255,82,82,.04)!important}
+tr.pnl-negative-high td{background:rgba(255,82,82,.08)!important}
 </style>
 </head>
 <body>
@@ -123,6 +139,11 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
     <span id="fg-inline"></span>
     <span id="btc-inline"></span>
   </div>
+</div>
+
+<!-- Portfolio Summary -->
+<div class="card">
+  <div id="portfolio-summary" class="portfolio"><span class="loading">loading...</span></div>
 </div>
 
 <!-- Pipeline + Stats bar (inline) -->
@@ -231,6 +252,51 @@ let modelsFilter='all';
 let posShowAll=false, tradesShowAll=false;
 let sparklineCache={}; // Cache sparkline data {model_id: {data: [...], svg: '...'}}
 let sparklineWindow='7d'; // '7d' or '30d'
+
+// ── Portfolio Summary ──────────────────────────────────────────────────────
+async function loadPortfolio(){
+  try{
+    const portfolio=await api('/api/portfolio');
+    const ps=document.getElementById('portfolio-summary');
+
+    // Generate portfolio sparkline
+    const sparkSVG=generateSparklineSVG(portfolio.pnl_series||[]);
+    const sparkHTML=sparkSVG.includes('svg')?sparkSVG.replace('class="spark"','class="p-spark"'):'';
+
+    ps.innerHTML=`
+      <div class="p-item">
+        <div class="p-label">Total Capital</div>
+        <div class="p-value">$${fn(portfolio.total_capital_usd)}</div>
+      </div>
+      <div class="p-item">
+        <div class="p-label">Portfolio PnL</div>
+        <div class="p-value ${pc(portfolio.overall_pnl_pct)}">${fp(portfolio.overall_pnl_pct)}</div>
+      </div>
+      <div class="p-item">
+        <div class="p-label">7D PnL</div>
+        <div class="p-value ${pc(portfolio.overall_pnl_7d_pct)}">${fp(portfolio.overall_pnl_7d_pct)}</div>
+      </div>
+      <div class="p-item">
+        <div class="p-label">PnL/Day</div>
+        <div class="p-value ${pc(portfolio.overall_pnl_per_day_pct)}">${fp(portfolio.overall_pnl_per_day_pct)}</div>
+      </div>
+      <div class="p-item">
+        <div class="p-label">Total Positions</div>
+        <div class="p-value">${fn(portfolio.total_positions)}</div>
+      </div>
+      <div class="p-item">
+        <div class="p-label">Win Rate</div>
+        <div class="p-value">${ff(portfolio.overall_win_rate_pct,1)}%</div>
+      </div>
+      <div class="p-item">
+        <div class="p-label">7D Trend</div>
+        ${sparkHTML}
+      </div>
+    `;
+  }catch(e){
+    document.getElementById('portfolio-summary').innerHTML='<span class="err">Error loading portfolio: '+e.message+'</span>';
+  }
+}
 
 // ── Header / Market ────────────────────────────────────────────────────────
 async function loadHeader(){
@@ -367,8 +433,22 @@ function renderModels(){
     const isChamp=m.stage==='champion';
     const pfCls=m.ft_pf!=null?(m.ft_pf>=2?'gold':m.ft_pf>=1?'green':'red'):'';
     const sparkId=`spark-${m.model_id}`;
-    return`<tr class="${isChamp?'champ':''}">
-      <td class="mono">${tr8(m.model_id)}</td>
+
+    // Row color-coding based on 7D PnL
+    let rowClass='';
+    if(isChamp){rowClass='champ'}
+    else if(m.ft_pnl_last_7d!=null){
+      if(m.ft_pnl_last_7d>=5)rowClass='pnl-positive-high';
+      else if(m.ft_pnl_last_7d>0)rowClass='pnl-positive-low';
+      else if(m.ft_pnl_last_7d>=-5)rowClass='pnl-negative-low';
+      else rowClass='pnl-negative-high';
+    }
+
+    // Champion badge
+    const champBadge=isChamp?'<span class="champ-badge">★ CHAMPION</span>':'';
+
+    return`<tr class="${rowClass}">
+      <td class="mono">${tr8(m.model_id)}${champBadge}</td>
       <td>${dir(m.direction)}</td>
       <td>${stg(m.stage,m.is_paused)}</td>
       <td>${m.ft_trades??'—'}</td>
@@ -489,7 +569,7 @@ async function loadTrades(){
 
 // ── Orchestrate ────────────────────────────────────────────────────────────
 async function refreshAll(){
-  await Promise.allSettled([loadHeader(),loadModels(),loadPositions(),loadTrades()]);
+  await Promise.allSettled([loadPortfolio(),loadHeader(),loadModels(),loadPositions(),loadTrades()]);
 }
 refreshAll();
 setInterval(refreshAll,5*60*1000);
