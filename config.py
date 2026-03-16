@@ -61,14 +61,14 @@ LABEL_HORIZON_BARS = _env("LABEL_HORIZON_BARS", 42, int)
 LEVERAGE = _env("LEVERAGE", 2, int)  # Default leverage for newly opened paper positions
 
 # ── Tournament ───────────────────────────────────────────────────────────
-MIN_BT_TRADES = _env("MIN_BT_TRADES", 50, int)
-MIN_BT_PF = _env("MIN_BT_PF", 1.0, float)  # For short
-# 2026-03-15: Lowered long gate 0.7→0.5 — new coin spikes are rare, lower precision expected
-MIN_BT_PF_LONG = _env("MIN_BT_PF_LONG", 0.5, float)  # Lower for long (hunting moonshots)
-MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.20, float)  # For short
-# 2026-03-15: Lowered long precision 0.22→0.15 — expect many losers, hunting rare winners
-MIN_BT_PRECISION_LONG = _env("MIN_BT_PRECISION_LONG", 0.15, float)  # Lower for long
-MAX_FT_MODELS = _env("MAX_FT_MODELS", 10, int)
+MIN_BT_TRADES = _env("MIN_BT_TRADES", 30, int)  # 2026-03-16: Lowered 50→30 to widen net
+MIN_BT_PF = _env("MIN_BT_PF", 0.6, float)  # For short (lowered 1.0→0.6)
+# 2026-03-16: Lowered long gate 0.5→0.3 — REALLY widen the net, expect 95% losers
+MIN_BT_PF_LONG = _env("MIN_BT_PF_LONG", 0.3, float)  # Very low bar — let lottery tickets through
+MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.12, float)  # For short (lowered 0.20→0.12)
+# 2026-03-16: Lowered long precision 0.15→0.08 — hunting rare spikes, not accuracy
+MIN_BT_PRECISION_LONG = _env("MIN_BT_PRECISION_LONG", 0.08, float)  # Extremely low — quantity over quality
+MAX_FT_MODELS = _env("MAX_FT_MODELS", 20, int)  # 2026-03-16: Raised 10→20 to allow more FT runners
 # 2026-03-06: Relaxed thresholds — keep models in FT longer to collect more data.
 # Only retire clear losers (PF < 0.8) after substantial sample (200+ trades).
 # 2026-03-14: Lowered to 150 to clear FT backlog — retire after 150 trades if PF < 0.5.
@@ -78,9 +78,9 @@ MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.5, float)  # same - FT is free d
 CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 25, int)  # 100/day = 25 per 4h cycle
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)
-BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 0.8, float)  # For short
-# 2026-03-15: Lowered long bootstrap 0.6→0.4 — asymmetric payoff (lose 5%, win 30%+)
-BOOTSTRAP_PF_LOWER_BOUND_LONG = _env("BOOTSTRAP_PF_LOWER_BOUND_LONG", 0.4, float)  # For long
+BOOTSTRAP_PF_LOWER_BOUND = _env("BOOTSTRAP_PF_LOWER_BOUND", 0.5, float)  # For short (lowered 0.8→0.5)
+# 2026-03-16: Lowered long bootstrap 0.4→0.2 — asymmetric payoff (lose 5%, win 30%+)
+BOOTSTRAP_PF_LOWER_BOUND_LONG = _env("BOOTSTRAP_PF_LOWER_BOUND_LONG", 0.2, float)  # Very low CI requirement
 
 # ── PnL Weights (from NQ pipeline) ──────────────────────────────────────
 PNL_WEIGHT_TP = _env("PNL_WEIGHT_TP", 1.0, float)
@@ -108,8 +108,8 @@ PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)
 # 2026-03-11: Increased 2→5 so that when position slots are available, up to 5
 # signals are taken per 4h cycle instead of just 2.
 TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 5, int)
-# 2026-03-15: Lowered entry threshold 0.70→0.50 for longs (need more lottery tickets)
-ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.50, float)
+# 2026-03-16: Lowered entry threshold 0.50→0.30 for longs (cast VERY wide net)
+ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.30, float)
 SYMBOL_WHITELIST = _env_csv("SYMBOL_WHITELIST", [])
 SYMBOL_WHITELIST_MIN_TRADES = _env("SYMBOL_WHITELIST_MIN_TRADES", 20, int)
 
