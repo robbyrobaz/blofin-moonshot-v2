@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/MEMORY.md`.
 > **UPDATE THIS FILE** when you learn something new. It persists across sessions.
-> Last updated: 2026-03-16 11:15 MST
+> Last updated: 2026-03-16 12:05 MST
 
 ## Blofin Architecture (Key Decisions)
 
@@ -54,6 +54,14 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 - Subagents die on heavy data tasks — multi-GB loads run in main session
 - Volume column in Blofin ticks is tick count, not real volume (thresholds ≤0.8)
 - pandas dropna() breaks index alignment — always reset_index(drop=True)
+
+## ⛔ Moonshot Cycle Investigation Anti-Pattern (Mar 16 2026)
+**NEVER kill cycles to "investigate" — they're slow (15-20min) not broken**
+- Extended data: 470 symbols × 2.5 req/sec = 10+ min just for funding/OI/tickers
+- Backtest: 20 models/cycle × 30-60sec each = 10-20 min
+- Killing mid-cycle makes it LOOK like cycles never complete — because they don't (you killed them)
+- **Correct approach:** Start cycle, check back in 20 min, verify completion in logs
+- If truly hung (same stage >30min), THEN investigate — not after 10min of normal work
 
 ## ⛔ Agent File Updates (Mar 16 2026)
 - **Your BOOTSTRAP.md and MEMORY.md are symlinked from the repo**
