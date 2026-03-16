@@ -277,9 +277,45 @@ def load_champions(db) -> tuple:
             "feature_version": row["feature_version"],
             "direction": direction,
         }
-        log.info("champion %s: %s pnl=%.2f%% trades=%d pf=%.2f",
-                 direction, row["model_id"][:12], row["ft_pnl"] or 0,
-                 row["ft_trades"] or 0, row["ft_pf"] or 0)
+
+        # Get actual champion performance (not FT stats)
+        champ_stats = db.execute(
+            """SELECT
+                COUNT(*) as total_trades,
+                SUM(CASE WHEN status='closed' THEN 1 ELSE 0 END) as closed_trades,
+                SUM(CASE WHEN status='open' THEN 1 ELSE 0 END) as open_trades,
+                SUM(CASE WHEN status='closed' THEN pnl_pct ELSE 0 END) as total_pnl,
+                AVG(CASE WHEN status='closed' AND pnl_pct IS NOT NULL THEN pnl_pct END) as avg_pnl
+            FROM positions
+            WHERE model_id = ? AND is_champion_trade = 1""",
+            (row["model_id"],),
+        ).fetchone()
+
+        total = champ_stats["total_trades"] or 0
+        closed = champ_stats["closed_trades"] or 0
+        open_pos = champ_stats["open_trades"] or 0
+        total_pnl = champ_stats["total_pnl"] or 0
+        avg_pnl = champ_stats["avg_pnl"] or 0
+
+        # Calculate PF from closed trades
+        champ_pf = 0.0
+        if closed > 0:
+            closed_trades = db.execute(
+                """SELECT pnl_pct FROM positions
+                WHERE model_id = ? AND is_champion_trade = 1 AND status = 'closed' AND pnl_pct IS NOT NULL""",
+                (row["model_id"],),
+            ).fetchall()
+            wins = sum(1 for t in closed_trades if t["pnl_pct"] > 0)
+            losses = sum(1 for t in closed_trades if t["pnl_pct"] <= 0)
+            if losses > 0:
+                avg_win = sum(t["pnl_pct"] for t in closed_trades if t["pnl_pct"] > 0) / wins if wins > 0 else 0
+                avg_loss = abs(sum(t["pnl_pct"] for t in closed_trades if t["pnl_pct"] <= 0) / losses)
+                if avg_loss > 0:
+                    champ_pf = (wins / (wins + losses)) * (avg_win / avg_loss) if wins > 0 else 0
+
+        log.info("champion %s: %s champ_trades=%d (%d open, %d closed) pnl=%.2f%% pf=%.2f | FT: %d trades pf=%.2f",
+                 direction, row["model_id"][:12], total, open_pos, closed,
+                 total_pnl, champ_pf, row["ft_trades"] or 0, row["ft_pf"] or 0)
         results[direction] = champ
 
     return (results.get("long"), results.get("short"))
