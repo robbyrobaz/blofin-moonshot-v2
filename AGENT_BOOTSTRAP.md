@@ -6,12 +6,14 @@
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 14:45:**
+**Heartbeat 15:15:**
 - ✅ All services active (Blofin stack, Moonshot dashboard)
 - ✅ Moonshot cycle 124 completed at 14:39 (45min, 0 errors)
-- ✅ Champion SHORT: de44f72dbb01 (PF 2.22, 388 trades)
-- ⚠️ **ALERT:** Moonshot DB is 0 bytes (investigation dispatched: c_89a53c5e3d4a4)
-- ⚠️ **ALERT:** Blofin paper_trades shows 0 completed trades (investigation dispatched: c_2af8a2488a37b)
+- ⚠️ **CHAMPION UNDERPERFORMING:** de44f72dbb01 (PF=0.98, 388 trades) — BELOW 1.0 THRESHOLD
+- 📊 FT backlog: 259 models (draining 20/cycle)
+- 📊 Open positions: 953
+- 🔧 Diagnostic card dispatched: c_ceada937a850c (champion PF analysis)
+- ✅ Blofin FT early stage: max 3 trades/pair, not ready for promotion
 - ✅ No critical alerts from monitor
 
 **Major fixes deployed:**
