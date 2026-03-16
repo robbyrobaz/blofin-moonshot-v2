@@ -24,7 +24,9 @@ from config import (
     MIN_BT_PRECISION_LONG,
     MIN_BT_TRADES,
     MIN_FT_PF_KEEP,
+    MIN_FT_PF_KEEP_50,
     MIN_FT_TRADES_EVAL,
+    MIN_FT_TRADES_EVAL_50,
     TOURNAMENT_DIR,
     log,
 )
@@ -33,30 +35,53 @@ from config import (
 def demote_underperformers(db):
     """Demote FT models that fail performance gates.
 
-    POLICY: FT is FREE data. Only demote truly catastrophic performers.
-    - Must have 150+ trades (statistically significant)
-    - Must have PF < 0.5 (clearly no edge)
-    - Everything else keeps running to collect data
+    POLICY: Two-tier retirement to manage FT backlog while respecting data collection.
+    Tier 1: Unprofitable models (PF < MIN_FT_PF_KEEP_50 after MIN_FT_TRADES_EVAL_50)
+    Tier 2: Catastrophic models (PF < MIN_FT_PF_KEEP after MIN_FT_TRADES_EVAL)
     """
     now_ms = int(time.time() * 1000)
 
-    # Only demote catastrophic losers with enough data
-    demoted = db.execute(
+    # Tier 1: Retire unprofitable models early (default: PF < 0.9 after 50 trades)
+    tier1 = db.execute(
         """UPDATE tournament_models
            SET stage = 'retired', retired_at = ?,
-               retire_reason = 'ft_catastrophic_pf_below_0.5_after_150_trades'
+               retire_reason = ?
            WHERE stage IN ('forward_test', 'ft')
-             AND ft_trades >= 150
-             AND ft_pf < 0.5
+             AND ft_trades >= ?
+             AND ft_pf < ?
              AND ft_pf IS NOT NULL""",
-        (now_ms,),
+        (
+            now_ms,
+            f'ft_unprofitable_pf_below_{MIN_FT_PF_KEEP_50}_after_{MIN_FT_TRADES_EVAL_50}_trades',
+            MIN_FT_TRADES_EVAL_50,
+            MIN_FT_PF_KEEP_50,
+        ),
+    ).rowcount
+
+    # Tier 2: Retire catastrophic losers with more data (default: PF < 0.5 after 150 trades)
+    tier2 = db.execute(
+        """UPDATE tournament_models
+           SET stage = 'retired', retired_at = ?,
+               retire_reason = ?
+           WHERE stage IN ('forward_test', 'ft')
+             AND ft_trades >= ?
+             AND ft_pf < ?
+             AND ft_pf IS NOT NULL""",
+        (
+            now_ms,
+            f'ft_catastrophic_pf_below_{MIN_FT_PF_KEEP}_after_{MIN_FT_TRADES_EVAL}_trades',
+            MIN_FT_TRADES_EVAL,
+            MIN_FT_PF_KEEP,
+        ),
     ).rowcount
 
     db.commit()
-    if demoted > 0:
-        log.info("demote_underperformers: retired %d catastrophic models (PF < 0.5 after 150+ trades)", demoted)
+    total = tier1 + tier2
+    if total > 0:
+        log.info("demote_underperformers: retired %d models (tier1=%d unprofitable, tier2=%d catastrophic)",
+                 total, tier1, tier2)
     else:
-        log.debug("demote_underperformers: no models demoted (good — FT is free data)")
+        log.debug("demote_underperformers: no models demoted")
 
 
 def crown_champion_if_ready(db):

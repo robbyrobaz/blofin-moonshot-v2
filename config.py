@@ -70,11 +70,14 @@ MIN_BT_PRECISION = _env("MIN_BT_PRECISION", 0.12, float)  # For short (lowered 0
 MIN_BT_PRECISION_LONG = _env("MIN_BT_PRECISION_LONG", 0.08, float)  # Extremely low — quantity over quality
 MAX_FT_MODELS = _env("MAX_FT_MODELS", 20, int)  # 2026-03-16: Raised 10→20 to allow more FT runners
 # 2026-03-06: Relaxed thresholds — keep models in FT longer to collect more data.
-# Only retire clear losers (PF < 0.8) after substantial sample (200+ trades).
 # 2026-03-14: Lowered to 150 to clear FT backlog — retire after 150 trades if PF < 0.5.
-MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 150, int)  # only eval after 150 FT trades
-MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 0.5, float)  # only demote catastrophic losers
-MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.5, float)  # same - FT is free data
+# 2026-03-16: Two-tier retirement to manage 289-model backlog:
+#   - Tier 1: Unprofitable (PF < 0.9) after 50 trades — retire early losers
+#   - Tier 2: Catastrophic (PF < 0.5) after 150 trades — safety net
+MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 150, int)  # tier 2 eval threshold
+MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 0.5, float)  # tier 2: catastrophic losers
+MIN_FT_TRADES_EVAL_50 = _env("MIN_FT_TRADES_EVAL_50", 50, int)  # tier 1 eval threshold
+MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.9, float)  # tier 1: unprofitable models
 CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 25, int)  # 100/day = 25 per 4h cycle
 CHAMPION_BEAT_MARGIN = _env("CHAMPION_BEAT_MARGIN", 0.10, float)
 BOOTSTRAP_RESAMPLES = _env("BOOTSTRAP_RESAMPLES", 1000, int)
