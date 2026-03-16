@@ -70,9 +70,28 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
 .btn{padding:2px 8px;background:rgba(15,52,96,.3);border:1px solid var(--border);border-radius:3px;color:var(--blue);cursor:pointer;font-size:13px}
 .btn:hover{background:rgba(15,52,96,.5)}
 
+/* Sparklines */
+.spark{display:inline-block;vertical-align:middle;width:60px;height:16px}
+.spark-loading{color:var(--t2);font-size:10px}
+
 /* Grid layout */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media(max-width:768px){.grid2{grid-template-columns:1fr}}
+
+/* Mobile responsive */
+@media(max-width:768px){
+  .grid2{grid-template-columns:1fr}
+  .hdr{flex-direction:column;align-items:flex-start;gap:6px}
+  .hdr-r{width:100%;justify-content:space-between}
+  .stats{font-size:13px}
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:600px;font-size:13px}
+  th{font-size:11px;padding:3px 4px}
+  td{padding:3px 4px;font-size:13px}
+  .card{padding:6px}
+  .sec{font-size:13px}
+  .filters{gap:4px}
+  .filter-btn{padding:2px 8px;font-size:12px}
+}
 
 /* Filters */
 .filters{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0;margin-bottom:4px}
@@ -123,7 +142,7 @@ td.mono{font-family:'Courier New',monospace;font-size:13px}
     <button class="filter-btn" data-filter="long" onclick="filterModels('long')">Long</button>
     <button class="filter-btn" data-filter="paused" onclick="filterModels('paused')">Paused</button>
   </div>
-  <div class="tw"><table id="models-table"><tbody><tr><td class="loading" colspan="12">loading...</td></tr></tbody></table></div>
+  <div class="tw"><table id="models-table"><tbody><tr><td class="loading" colspan="13">loading...</td></tr></tbody></table></div>
   <div style="padding:3px 0" id="models-toggle-wrap"></div>
 </div>
 
@@ -159,10 +178,59 @@ function stg(s,paused){
 
 async function api(ep){const r=await fetch(ep);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
 
+// ── Sparklines ─────────────────────────────────────────────────────────────
+function generateSparklineSVG(series){
+  if(!series||!series.length)return '<span class="spark-loading">—</span>';
+
+  const w=60,h=16,pad=1;
+  const values=series.map(d=>d.pnl_pct_sum||0);
+
+  // Cumulative PnL
+  let cumulative=0;
+  const cumValues=values.map(v=>{cumulative+=v;return cumulative});
+
+  const minV=Math.min(...cumValues,0);
+  const maxV=Math.max(...cumValues,0);
+  const range=maxV-minV||1;
+
+  const points=cumValues.map((v,i)=>{
+    const x=pad+(i/(cumValues.length-1||1))*(w-2*pad);
+    const y=h-pad-((v-minV)/range)*(h-2*pad);
+    return`${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  const color=cumulative>=0?'var(--green)':'var(--red)';
+
+  return`<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <polyline fill="none" stroke="${color}" stroke-width="1.5" points="${points}"/>
+  </svg>`;
+}
+
+async function loadSparkline(modelId){
+  if(sparklineCache[modelId])return sparklineCache[modelId].svg;
+
+  try{
+    const resp=await api(`/api/models/${modelId}/pnl-timeseries?window=${sparklineWindow}`);
+    const svg=generateSparklineSVG(resp.series||[]);
+    sparklineCache[modelId]={data:resp.series,svg};
+    return svg;
+  }catch(e){
+    return'<span class="spark-loading">—</span>';
+  }
+}
+
+async function loadAllSparklines(modelIds){
+  // Load sparklines in parallel for visible models
+  const promises=modelIds.map(id=>loadSparkline(id));
+  await Promise.allSettled(promises);
+}
+
 // ── State ──────────────────────────────────────────────────────────────────
 let modelsData=[], modelsSortCol='ft_pnl_last_7d', modelsSortDir='desc', modelsShowAll=false;
 let modelsFilter='all';
 let posShowAll=false, tradesShowAll=false;
+let sparklineCache={}; // Cache sparkline data {model_id: {data: [...], svg: '...'}}
+let sparklineWindow='7d'; // '7d' or '30d'
 
 // ── Header / Market ────────────────────────────────────────────────────────
 async function loadHeader(){
@@ -230,7 +298,7 @@ async function loadModels(){
     document.getElementById('models-count').textContent='('+modelsData.length+')';
     renderModels();
   }catch(e){
-    document.getElementById('models-table').innerHTML='<tbody><tr><td class="err" colspan="12">'+e.message+'</td></tr></tbody>';
+    document.getElementById('models-table').innerHTML='<tbody><tr><td class="err" colspan="13">'+e.message+'</td></tr></tbody>';
   }
 }
 
@@ -276,6 +344,7 @@ function renderModels(){
     {key:'direction',label:'Dir'},
     {key:'stage',label:'Stage'},
     {key:'ft_trades',label:'Trades'},
+    {key:'trend',label:'Trend',nosort:true},
     {key:'ft_pnl_last_7d',label:'7D PnL%'},
     {key:'ft_pnl_per_day',label:'PnL/Day%'},
     {key:'ft_pnl',label:'FT PnL%'},
@@ -289,17 +358,21 @@ function renderModels(){
   const ths=cols.map(c=>{
     let cls='';
     if(c.key===modelsSortCol)cls=modelsSortDir==='asc'?'sorted-asc':'sorted-desc';
-    return`<th class="${cls}" onclick="sortModels('${c.key}')">${c.label}</th>`;
+    const onclick=c.nosort?'':'onclick="sortModels(\''+c.key+'\')"';
+    const cursor=c.nosort?'style="cursor:default"':'';
+    return`<th class="${cls}" ${onclick} ${cursor}>${c.label}</th>`;
   }).join('');
 
   const trs=show.map(m=>{
     const isChamp=m.stage==='champion';
     const pfCls=m.ft_pf!=null?(m.ft_pf>=2?'gold':m.ft_pf>=1?'green':'red'):'';
+    const sparkId=`spark-${m.model_id}`;
     return`<tr class="${isChamp?'champ':''}">
       <td class="mono">${tr8(m.model_id)}</td>
       <td>${dir(m.direction)}</td>
       <td>${stg(m.stage,m.is_paused)}</td>
       <td>${m.ft_trades??'—'}</td>
+      <td id="${sparkId}"><span class="spark-loading">⋯</span></td>
       <td class="${pc(m.ft_pnl_last_7d)}">${fp(m.ft_pnl_last_7d)}</td>
       <td class="${pc(m.ft_pnl_per_day)}">${fp(m.ft_pnl_per_day)}</td>
       <td class="${pc(m.ft_pnl)}">${fp(m.ft_pnl)}</td>
@@ -312,12 +385,22 @@ function renderModels(){
   }).join('');
 
   if(!show.length){
-    document.getElementById('models-table').innerHTML='<tbody><tr><td colspan="12" style="color:var(--t2);padding:8px;text-align:center">No models match the current filter</td></tr></tbody>';
+    document.getElementById('models-table').innerHTML='<tbody><tr><td colspan="13" style="color:var(--t2);padding:8px;text-align:center">No models match the current filter</td></tr></tbody>';
     document.getElementById('models-toggle-wrap').innerHTML='';
     return;
   }
 
   document.getElementById('models-table').innerHTML=`<thead><tr>${ths}</tr></thead><tbody>${trs}</tbody>`;
+
+  // Load sparklines asynchronously for visible models
+  show.forEach(async m=>{
+    const sparkId=`spark-${m.model_id}`;
+    const el=document.getElementById(sparkId);
+    if(el){
+      const svg=await loadSparkline(m.model_id);
+      el.innerHTML=svg;
+    }
+  });
 
   const wrap=document.getElementById('models-toggle-wrap');
   if(sorted.length>LIMIT){
