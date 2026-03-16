@@ -92,10 +92,10 @@ PNL_WEIGHT_SL = _env("PNL_WEIGHT_SL", 0.50, float)  # (SL/TP) × 1.5 = 0.5
 # ── Execution ────────────────────────────────────────────────────────────
 # 2026-03-15: ENABLE LONGS — primary mission now (hunting new coin spikes)
 LONG_DISABLED = _env("LONG_DISABLED", False, lambda v: str(v).lower() in {"1", "true", "yes", "on"})
-# 2026-03-15: Raised long positions 3→10 — need more lottery tickets for rare spikes
-MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 10, int)
-# 2026-03-15: Lowered short positions 6→2 — backup only, longs are primary
-MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 2, int)
+# 2026-03-16: Raised to 500 — 471 ML longs already open, 10-limit was blocking ALL new champion entries
+MAX_LONG_POSITIONS = _env("MAX_LONG_POSITIONS", 500, int)
+# 2026-03-16: Raised to 500 for consistency (456 ML shorts open)
+MAX_SHORT_POSITIONS = _env("MAX_SHORT_POSITIONS", 500, int)
 BASE_POSITION_PCT = _env("BASE_POSITION_PCT", 0.02, float)
 MAX_POSITION_PCT = _env("MAX_POSITION_PCT", 0.05, float)
 # 2026-03-15: Raised new listing boost 1.5x→5x — prioritize coins <30d old
