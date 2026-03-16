@@ -293,20 +293,32 @@ def check_exits(
             continue
 
         # ── 5. INVALIDATION ──────────────────────────────────────────────
+        # Option C: Disable invalidation for first 50 trades (TOURNAMENT_PHILOSOPHY.md)
+        # Let models prove profitability before applying invalidation
         if bars_since_entry >= config.INVALIDATION_GRACE_BARS:
-            inv_threshold = _load_invalidation_threshold(db, model_id)
-            entry_score = pos["entry_ml_score"]
-            if (
-                inv_threshold is not None
-                and entry_score is not None
-                and entry_score < inv_threshold
-            ):
-                pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
-                _close_position(
-                    db, pos, current_price, "INVALIDATION", pnl, ts_ms
-                )
-                counts["exits_invalidation"] += 1
-                continue
+            # Check model's FT trade count
+            model_stats = db.execute(
+                "SELECT ft_trades FROM tournament_models WHERE model_id = ?",
+                (model_id,)
+            ).fetchone()
+
+            model_ft_trades = model_stats["ft_trades"] if model_stats else 0
+
+            # Only apply invalidation if model has 50+ FT trades
+            if model_ft_trades >= 50:
+                inv_threshold = _load_invalidation_threshold(db, model_id)
+                entry_score = pos["entry_ml_score"]
+                if (
+                    inv_threshold is not None
+                    and entry_score is not None
+                    and entry_score < inv_threshold
+                ):
+                    pnl = compute_pnl_pct(entry_price, current_price, direction, leverage)
+                    _close_position(
+                        db, pos, current_price, "INVALIDATION", pnl, ts_ms
+                    )
+                    counts["exits_invalidation"] += 1
+                    continue
 
         # ── 6. REGIME_EXIT ───────────────────────────────────────────────
         if regime == "bear" and direction == "long":
