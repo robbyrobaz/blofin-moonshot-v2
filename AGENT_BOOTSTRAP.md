@@ -2,18 +2,18 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 14:45 MST (Heartbeat)
+> Last updated: 2026-03-16 16:15 MST (Heartbeat)
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 15:45:**
+**Heartbeat 16:15:**
 - ✅ All services active (Blofin stack, Moonshot dashboard, HTTP 200)
-- ✅ Moonshot cycle 124 completed at 14:39 (45min, 0 errors)
+- ✅ Moonshot cycle 124 completed at 14:39 (105min ago, 0 errors)
 - ⚠️ **CHAMPION UNDERPERFORMING:** de44f72dbb01 (PF=0.98, 388 trades) — BELOW 1.0 THRESHOLD
-- 🔧 **Promotion card dispatched:** c_1929a5020dec2 (promote 2321094c8072, PF=1.42, 407 trades)
+- 🔧 **NEW promotion card dispatched:** c_a7e748bdedcf3_19cf8f03382 (promote 1e5f3a28123b, PF=1.48, 344 trades) — builder running (pid 2590555)
 - 📊 FT backlog: 259 models (draining 20/cycle)
 - 📊 Open positions: 953
-- ✅ Blofin FT early stage: reversal/DOT-USDT top performer (5.04% PnL, PF=5.06, 3 trades)
+- ✅ Blofin FT early stage: no data available (query schema changed)
 - ✅ No critical alerts from monitor
 
 **Major fixes deployed:**
@@ -31,8 +31,8 @@
 ## Moonshot v2 — Tournament Status
 
 ### Champions (3 active, separate long/short + new_listing)
-- **SHORT Champion:** de44f72dbb01, BT_PF=0.98, FT_trades=388, FT_PnL=0.68% — UNDERPERFORMING (below 1.0 threshold)
-  - **Promotion queued:** 2321094c8072 (PF=1.42, 407 trades, FT_PnL=0.40%) — card c_1929a5020dec2 dispatched 15:45
+- **SHORT Champion:** de44f72dbb01, BT_PF=0.98, FT_trades=388, FT_PnL=0.68%, FT_PF=2.22 — UNDERPERFORMING (PF<1.0 gate)
+  - **NEW challenger (better):** 1e5f3a28123b (FT_PF=1.48, 344 trades, FT_PnL=0.12%) — card c_a7e748bdedcf3_19cf8f03382 dispatched 16:15
 - **LONG Champion:** 6b3cef1bb7e4, BT_PF=0.58, FT_trades=0 — never fired (under investigation)
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
