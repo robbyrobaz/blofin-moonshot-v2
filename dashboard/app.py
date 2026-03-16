@@ -216,6 +216,63 @@ def _load_regime(conn):
     }
 
 
+def _load_macro():
+    """Load external macro data (BTC dominance, fear/greed) from /mnt/data/market_macro.db."""
+    macro_db_path = Path("/mnt/data/market_macro.db")
+    
+    if not macro_db_path.exists():
+        return None
+    
+    try:
+        uri = f"file:{macro_db_path}?mode=ro"
+        conn = sqlite3.connect(uri, uri=True)
+        conn.row_factory = sqlite3.Row
+        
+        # Latest market data
+        global_row = conn.execute("""
+            SELECT ts_iso, btc_dominance_pct, total_market_cap_usd, total_volume_24h_usd
+            FROM market_global 
+            ORDER BY ts_ms DESC LIMIT 1
+        """).fetchone()
+        
+        # Latest fear/greed (external source, more frequently updated)
+        fg_row = conn.execute("""
+            SELECT ts_iso, value, classification 
+            FROM fear_greed 
+            ORDER BY ts_ms DESC LIMIT 1
+        """).fetchone()
+        
+        # Calculate 24h change in BTC dominance
+        dom_24h_ago = conn.execute("""
+            SELECT btc_dominance_pct 
+            FROM market_global 
+            WHERE ts_ms < (SELECT ts_ms FROM market_global ORDER BY ts_ms DESC LIMIT 1) - 86400000
+            ORDER BY ts_ms DESC LIMIT 1
+        """).fetchone()
+        
+        conn.close()
+        
+        if not global_row:
+            return None
+        
+        dom_change = None
+        if dom_24h_ago and global_row["btc_dominance_pct"]:
+            dom_change = global_row["btc_dominance_pct"] - dom_24h_ago["btc_dominance_pct"]
+        
+        return {
+            "btc_dom": global_row["btc_dominance_pct"],
+            "btc_dom_24h_change": dom_change,
+            "total_mcap_usd": global_row["total_market_cap_usd"],
+            "total_vol_24h_usd": global_row["total_volume_24h_usd"],
+            "fear_greed_value": fg_row["value"] if fg_row else None,
+            "fear_greed_label": fg_row["classification"] if fg_row else None,
+            "updated_at": global_row["ts_iso"],
+        }
+    except (sqlite3.Error, TypeError, KeyError) as e:
+        # External DB may not exist yet or be locked
+        return None
+
+
 def _load_social(conn):
     cutoff_ms = int((time.time() - 24 * 3600) * 1000)
     mentions_sql = """
@@ -242,7 +299,7 @@ def _load_social(conn):
         except (json.JSONDecodeError, TypeError):
             pass
 
-    # Fear & Greed
+    # Fear & Greed (from Moonshot's own collection)
     fg_sql = """
         SELECT numeric_value, text_snippet, ts FROM social_events
         WHERE source = 'fear_greed'
@@ -693,7 +750,7 @@ def api_recent_trades():
 
 @app.route("/api/market")
 def api_market():
-    """Market context: regime, BTC 30d return, Fear & Greed index."""
+    """Market context: regime, BTC 30d return, Fear & Greed index, external macro."""
     try:
         conn = _ro_db()
     except sqlite3.OperationalError:
@@ -702,7 +759,7 @@ def api_market():
     try:
         regime_data = _load_regime(conn)
 
-        # Fear & Greed
+        # Fear & Greed (from Moonshot's own social_events)
         fg_sql = """
             SELECT numeric_value, text_snippet, ts FROM social_events
             WHERE source = 'fear_greed'
@@ -718,12 +775,16 @@ def api_market():
                 "ts_ms": fg_row["ts"],
             }
 
+        # External macro data (BTC dominance, global market cap)
+        macro = _load_macro()
+
         return jsonify({
             "regime": regime_data["regime"],
             "btc_30d_return": round(regime_data["btc_30d_return"] * 100, 2)
                               if regime_data["btc_30d_return"] is not None else None,
             "market_breadth": regime_data["market_breadth"],
             "fear_greed": fear_greed,
+            "macro": macro,  # BTC dom, total mcap, 24h vol
         })
     finally:
         conn.close()
