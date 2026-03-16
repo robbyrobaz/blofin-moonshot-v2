@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/MEMORY.md`.
 > **UPDATE THIS FILE** when you learn something new. It persists across sessions.
-> Last updated: 2026-03-16 12:05 MST
+> Last updated: 2026-03-16 13:29 MST
 
 ## Blofin Architecture (Key Decisions)
 
@@ -33,6 +33,14 @@
 - `update_days_since_listing()` in `src/data/discovery.py`
 - `model_id='new_listing'` requires entry in `tournament_models` table (FK constraint)
 - Coins ≤7 days: 2% position, 2x leverage, trailing stop
+- **First successful entry:** CFG-USDT at $0.1890 (Mar 16 10:45 AM)
+- Feature deployed Mar 16 07:55 but didn't work until 10:45 fix
+
+### Backtest Queue Management (Mar 16 2026)
+- **Root cause of cycle hangs:** 224 models in backtest queue, `backtest_new_challengers()` processed ALL serially
+- **Fix:** Added batch limit (20 models/cycle) — commit 4cd2f59
+- Queue drains at 20/cycle, prevents infinite backtest loops
+- Backtest stage: 1-3 min per model × 20 = 20-60 min per cycle (expected)
 
 ### Why v1 Died
 Entry/exit used different feature sets. exit.py called predict_proba() without symbol/ts_ms → regime features=0.0 → all scores 0.129 → 15 profitable positions killed. v2 prevents with feature_version hashing.
@@ -54,14 +62,20 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 - Subagents die on heavy data tasks — multi-GB loads run in main session
 - Volume column in Blofin ticks is tick count, not real volume (thresholds ≤0.8)
 - pandas dropna() breaks index alignment — always reset_index(drop=True)
+- **Always verify service status before claiming something is broken** — "pipeline stopped" claims need `systemctl is-active` proof
+- **Read current README.md from repo before making architecture claims** — don't rely on stale context
 
 ## ⛔ Moonshot Cycle Investigation Anti-Pattern (Mar 16 2026)
-**NEVER kill cycles to "investigate" — they're slow (15-20min) not broken**
+**NEVER kill cycles to "investigate" — they're slow (60+ min) not broken**
 - Extended data: 470 symbols × 2.5 req/sec = 10+ min just for funding/OI/tickers
-- Backtest: 20 models/cycle × 30-60sec each = 10-20 min
+- Backtest: 20 models/cycle × 1-3min each = 20-60 min
+- Tournament + FT scoring: 10-15 min
+- **Total cycle time: 60-65 minutes (not 15-20 as originally estimated)**
 - Killing mid-cycle makes it LOOK like cycles never complete — because they don't (you killed them)
-- **Correct approach:** Start cycle, check back in 20 min, verify completion in logs
-- If truly hung (same stage >30min), THEN investigate — not after 10min of normal work
+- **Correct approach:** Start cycle, check back in 60+ min, verify completion in logs
+- If truly hung (same stage >90min with no progress), THEN investigate — not after 10min of normal work
+
+**Cycle 122 proof:** 12:03:19 → 13:08:10 (64min 51sec), completed successfully with 0 errors after applying batch limit fix
 
 ## ⛔ Agent File Updates (Mar 16 2026)
 - **Your BOOTSTRAP.md and MEMORY.md are symlinked from the repo**
