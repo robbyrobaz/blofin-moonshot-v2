@@ -6,14 +6,14 @@
 
 ## Session Summary (Mar 16 2026)
 
-**Heartbeat 15:15:**
-- ✅ All services active (Blofin stack, Moonshot dashboard)
+**Heartbeat 15:45:**
+- ✅ All services active (Blofin stack, Moonshot dashboard, HTTP 200)
 - ✅ Moonshot cycle 124 completed at 14:39 (45min, 0 errors)
 - ⚠️ **CHAMPION UNDERPERFORMING:** de44f72dbb01 (PF=0.98, 388 trades) — BELOW 1.0 THRESHOLD
+- 🔧 **Promotion card dispatched:** c_1929a5020dec2 (promote 2321094c8072, PF=1.42, 407 trades)
 - 📊 FT backlog: 259 models (draining 20/cycle)
 - 📊 Open positions: 953
-- 🔧 Diagnostic card dispatched: c_ceada937a850c (champion PF analysis)
-- ✅ Blofin FT early stage: max 3 trades/pair, not ready for promotion
+- ✅ Blofin FT early stage: reversal/DOT-USDT top performer (5.04% PnL, PF=5.06, 3 trades)
 - ✅ No critical alerts from monitor
 
 **Major fixes deployed:**
@@ -30,10 +30,11 @@
 
 ## Moonshot v2 — Tournament Status
 
-### Champions (2 active, separate long/short)
-- **SHORT Champion:** de44f72dbb01, PF=2.22, 388 trades (active, promoted Cycle 122)
-- **LONG Champion:** 6409feee2207, PF=0.00, 0 trades (promoted but never fired — under investigation)
-- **New Listing:** new_listing (rule-based), PF=0.00, 0 trades
+### Champions (3 active, separate long/short + new_listing)
+- **SHORT Champion:** de44f72dbb01, BT_PF=0.98, FT_trades=388, FT_PnL=0.68% — UNDERPERFORMING (below 1.0 threshold)
+  - **Promotion queued:** 2321094c8072 (PF=1.42, 407 trades, FT_PnL=0.40%) — card c_1929a5020dec2 dispatched 15:45
+- **LONG Champion:** 6b3cef1bb7e4, BT_PF=0.58, FT_trades=0 — never fired (under investigation)
+- **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
 ### Tournament Numbers (Cycle 122 complete, 13:08 MST)
 | Stage | Count |
