@@ -58,10 +58,11 @@
 
 ## Blofin v1 Stack
 
-### Status
-- Paper trading active (86K+ trades)
-- **Pipeline timer STOPPED** per Rob's order — do not restart without approval
-- Services: ingestor, paper engine, dashboard all ACTIVE
+### Status — LIVE AND WORKING
+- Paper trading active (35K+ paper trades)
+- Services: `blofin-stack-ingestor`, `blofin-stack-paper`, `blofin-dashboard` — ALL ACTIVE
+- Dashboard: http://127.0.0.1:8892 (HTTP 200)
+- Top performers: INJ-USDT (PF 4.41, 5x), AAVE-USDT (PF 3.91, 5x), JTO-USDT (PF 3.80, 5x)
 
 ### Parquet Migration (Mar 15 — IN PROGRESS)
 - New ingestor writes to `data/ticks/*.parquet` (NVMe, 12x compression)
