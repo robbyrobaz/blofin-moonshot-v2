@@ -98,10 +98,20 @@ MAX_POSITION_PCT = _env("MAX_POSITION_PCT", 0.05, float)
 # 2026-03-15: Raised new listing boost 1.5x→5x — prioritize coins <30d old
 NEW_LISTING_BOOST = _env("NEW_LISTING_BOOST", 5.0, float)
 NEW_LISTING_DAYS = _env("NEW_LISTING_DAYS", 30, int)
+
+# ── Rule-Based New Listing Entry (2026-03-16) ───────────────────────────
+# Auto-enter ALL coins <7d old with trailing stops (ML can't predict bar 0-10 spikes)
+NEW_LISTING_ENABLED = _env("NEW_LISTING_ENABLED", True, lambda v: str(v).lower() in {"1", "true", "yes", "on"})
+NEW_LISTING_MAX_AGE_DAYS = _env("NEW_LISTING_MAX_AGE_DAYS", 7, int)  # Enter coins ≤7 days old
+NEW_LISTING_POSITION_PCT = _env("NEW_LISTING_POSITION_PCT", 0.02, float)  # 2% per coin
+NEW_LISTING_LEVERAGE = _env("NEW_LISTING_LEVERAGE", 2, int)  # 2x leverage
+# Exit params for new listings use same trail config below (activate 15%, trail 10%)
+
 TIME_STOP_DAYS = _env("TIME_STOP_DAYS", 7, int)
 TIME_STOP_BARS = _env("TIME_STOP_BARS", 42, int)  # 7d at 4h
-TRAIL_ACTIVATE_PCT = _env("TRAIL_ACTIVATE_PCT", 0.20, float)
-TRAIL_DISTANCE_PCT = _env("TRAIL_DISTANCE_PCT", 0.10, float)
+# 2026-03-16: Lowered trail activation 20%→15% for new listing strategy validation
+TRAIL_ACTIVATE_PCT = _env("TRAIL_ACTIVATE_PCT", 0.15, float)  # Activate at +15%
+TRAIL_DISTANCE_PCT = _env("TRAIL_DISTANCE_PCT", 0.10, float)  # Trail 10% below peak
 # 2026-03-15: Raised invalidation grace 2→20 bars (80h = 3.3d) — let longs run longer
 INVALIDATION_GRACE_BARS = _env("INVALIDATION_GRACE_BARS", 20, int)
 PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)

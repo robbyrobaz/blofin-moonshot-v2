@@ -123,9 +123,10 @@ def run_cycle():
         log.error("Label generation failed: %s", e)
         errors.append(f"labels: {e}")
 
-    # ── 6. Execution — champion model trades ─────────────────────────────
+    # ── 6. Execution — trades ────────────────────────────────────────────
     entries_long = 0
     entries_short = 0
+    entries_new_listing = 0
     exits_tp = exits_sl = exits_time = exits_trail = 0
     exits_invalidation = exits_regime = 0
     regime = "neutral"
@@ -139,6 +140,22 @@ def run_cycle():
     except Exception as e:
         log.error("Regime classification failed: %s", e)
         errors.append(f"regime: {e}")
+
+    # ── 6a. New Listing Rule-Based Entry (before champion ML) ────────────
+    try:
+        from src.execution.new_listing_entry import process_new_listings
+        before_count = db.execute(
+            "SELECT COUNT(*) as cnt FROM positions WHERE status = 'open' AND model_id = 'new_listing'"
+        ).fetchone()["cnt"]
+        process_new_listings(db)
+        after_count = db.execute(
+            "SELECT COUNT(*) as cnt FROM positions WHERE status = 'open' AND model_id = 'new_listing'"
+        ).fetchone()["cnt"]
+        entries_new_listing = after_count - before_count
+        log.info("New listings: %d entries", entries_new_listing)
+    except Exception as e:
+        log.error("New listing entry failed: %s", e)
+        errors.append(f"new_listings: {e}")
 
     try:
         from src.tournament.champion import load_champions
@@ -158,7 +175,7 @@ def run_cycle():
             )
             entries_long = entry_result.get("entries_long", 0)
             entries_short = entry_result.get("entries_short", 0)
-            log.info("Entries: %d long, %d short", entries_long, entries_short)
+            log.info("Champion entries: %d long, %d short", entries_long, entries_short)
 
             from src.execution.exit import check_exits
             exit_result = check_exits(
