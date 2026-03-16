@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-16 12:05 MST
+> Last updated: 2026-03-16 12:45 MST (crypto heartbeat)
 
 ## Moonshot v2 — Tournament Status
 
@@ -15,15 +15,15 @@
 | Stage | Count |
 |-------|-------|
 | Champion | 1 |
-| Forward Test | 280 (⚠️ backlog, threshold 50) |
-| Backtest | 243 |
-| Retired | 1,363 |
-| **Total** | **1,889** |
+| Forward Test | ~241 (improved from 289 via two-tier retirement) |
+| Backtest | ~243 |
+| Retired | ~1,400+ |
+| **Total** | **1,889+** |
 
 ### Coins
 - 471 total, 3 ≤7 days old
-- 668 open positions (1 new_listing auto-entry)
-- `days_since_listing` now computed each cycle (fixed Mar 16)
+- Open positions: monitoring (auto-entry active)
+- `days_since_listing` computed each cycle (fixed Mar 16)
 
 ### Direction-Specific Gates (Mar 14 2026)
 - SHORT: PF ≥ 1.0, precision ≥ 0.20, bootstrap CI ≥ 0.8
@@ -36,18 +36,19 @@
 - FK constraint required dummy model entry in tournament_models
 
 ### Services
-- `moonshot-v2.timer` — 4h cycle (running normally, 2500MB RAM backtest load)
-- `moonshot-v2-social.timer` — 1h social signals
-- `moonshot-v2-dashboard.service` — ACTIVE (port 8893)
-- Dashboard: http://127.0.0.1:8893/ (HTTP 200)
+- `moonshot-v2.timer` — 4h cycle (ACTIVE, cycle 122 running since 12:03)
+- `moonshot-v2-social.timer` — 1h social signals (ACTIVE)
+- `moonshot-v2-dashboard.service` — ACTIVE (port 8893, HTTP 200)
+- Dashboard: http://127.0.0.1:8893/
 
-### Cycle Performance (Mar 16 12:15 MST)
+### Cycle Performance (Mar 16 12:45 MST)
 
-**Current cycle:** 122 (started 12:03, in progress — extended data fetch stage)
-**Expected completion:** ~12:20 (15-20 min normal for 470 symbols)
+**Current cycle:** 122 (started 12:03, backtest stage in progress, 42min runtime)
+**Expected completion:** ~12:50 (15-20 min normal for backtest + 10-15 min data fetch)
+**Status:** HEALTHY — 2.1GB RAM usage, processing models normally
 
 **Recent fixes:**
-1. FT backlog reduction: Two-tier retirement (PF<0.9 at 50 trades) — commit c7c71b3
+1. FT backlog reduction: Two-tier retirement (PF<0.9 at 50 trades) — commit c7c71b3 (DEPLOYED)
 2. Extended data fetch: 10+ min/cycle expected (470 symbols × rate limits)
 3. Batch limit: 20 models/cycle for backtest (prevents RAM overload)
 
