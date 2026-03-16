@@ -37,7 +37,13 @@ V1_DATA_DIR = Path("/home/rob/.openclaw/workspace/blofin-moonshot/data")
 
 # ── Blofin API ───────────────────────────────────────────────────────────
 BLOFIN_BASE_URL = "https://openapi.blofin.com"
-BLOFIN_RATE_LIMIT_RPS = _env("BLOFIN_RATE_LIMIT_RPS", 10, int)
+# Shared budget: 500 req/min total
+# Conservative: use 150 req/min (30%) to leave room for:
+#   - Historical backfill (300 req/min)
+#   - Live ingestor (WebSocket, minimal REST)
+#   - Other processes
+# 150 req/min = 2.5 req/sec
+BLOFIN_RATE_LIMIT_RPS = _env("BLOFIN_RATE_LIMIT_RPS", 2.5, float)
 
 # ── Data ─────────────────────────────────────────────────────────────────
 CANDLE_INTERVAL = _env("CANDLE_INTERVAL", "4H")
