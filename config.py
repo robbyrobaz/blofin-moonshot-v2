@@ -123,8 +123,9 @@ PAPER_ACCOUNT_SIZE = _env("PAPER_ACCOUNT_SIZE", 100_000.0, float)
 # 2026-03-11: Increased 2→5 so that when position slots are available, up to 5
 # signals are taken per 4h cycle instead of just 2.
 TOP_N_SIGNALS = _env("TOP_N_SIGNALS", 5, int)
-# 2026-03-16: Lowered entry threshold 0.50→0.30 for longs (cast VERY wide net)
-ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.30, float)
+# 2026-03-16: FIX: Reverted 0.30→0.50 — 0.30 caused overtrading (39 trades, PF 0.22)
+# Wide net (0.30) dropped precision from 28%→7.7%, allowed scores as low as 0.366
+ENTRY_THRESHOLD_FLOOR = _env("ENTRY_THRESHOLD_FLOOR", 0.50, float)
 SYMBOL_WHITELIST = _env_csv("SYMBOL_WHITELIST", [])
 SYMBOL_WHITELIST_MIN_TRADES = _env("SYMBOL_WHITELIST_MIN_TRADES", 20, int)
 
