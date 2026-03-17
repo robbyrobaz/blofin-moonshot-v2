@@ -4,6 +4,13 @@
 > **UPDATE THIS FILE** when you learn something new. It persists across sessions.
 > Last updated: 2026-03-17 05:39 MST
 
+## Systemd Service Debugging (Mar 17 2026)
+- **Type=oneshot services need explicit `TimeoutStopSec`** — default is 90sec
+- Without it, long-running jobs get SIGTERM killed mid-execution
+- Symptoms: Process runs 15-20min then gets killed with "code=killed, status=15/TERM"
+- Fix: Add `TimeoutStopSec=<seconds>` to [Service] section (we use 120 for 2h buffer)
+- Moonshot cycles were getting killed at 16min every time (Mar 17 07:05-07:21)
+
 ## Performance Tuning (Mar 17 2026)
 - **Backtest batch was hardcoded at 20** — created bottleneck when GPU/CPU had headroom
 - Always check `top` and `nvidia-smi` before claiming hardware limits
