@@ -4,10 +4,10 @@
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
 > Last updated: 2026-03-17 05:37 MST (Performance Fix — Backtest Batch 20→100)
 
-## 🚨 TIMER RECOVERY (Mar 17 06:33) — HOURLY CYCLES RESTARTED
-- **Issue:** Timer stopped firing after cycle 132 (04:54 MST) — missed 06:05 trigger
+## 🚨 TIMER RECOVERY (Mar 17 07:02) — STABLE
+- **Issue (06:33):** Timer stopped firing after cycle 132 (04:54 MST) — missed 06:05 trigger
 - **Fix:** `systemctl --user daemon-reload && restart moonshot-v2.timer`
-- **Next cycle:** 07:05 MST (28min from now)
+- **Status:** Timer active, next cycle 07:05 MST (3min away)
 - **Root cause:** Timer may have stalled after timer file edit or daemon state desync
 
 ## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
@@ -22,22 +22,21 @@
 
 ## Session Summary (Mar 17 2026)
 
-**Heartbeat 06:33 (Mar 17):**
+**Heartbeat 07:02 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- 🚨 Moonshot Cycle 132 COMPLETE (04:54, 8h39m ago) — **NO NEW CYCLES (timer stalled)**
-  - Timer restarted, next cycle: 07:05 MST
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE** (21 open)
+- ✅ Moonshot timer active, Cycle 132 COMPLETE (04:54, 2h8m ago), next cycle 07:05 (3min)
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (21 open)
 - 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
 - ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 299 models (unchanged — no cycles ran)
-- 📊 BT backlog: 284 models (unchanged — no cycles ran)
+- 📊 FT backlog: 306 models (up from 299 — no cycles since 04:54, timer was stalled until 06:33)
+- 📊 BT backlog: 265 models (down from 284 — processing happened before timer stall)
 - 📊 Open positions: 959 (21 champion, 938 non-champion)
-- 📊 Blofin v1: Top 5 FT: reversal+DOT PF=5.06 (3 trades), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), reversal+AVAX PF=1.59 (1)
-- 🔧 Historical backfill: 2 processes running
+- 📊 Blofin v1: Top 5 FT: reversal+DOT PF=5.06 (3 trades), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
+- 🔧 Historical backfill: COMPLETE (0 processes running)
 - 🔧 Builders running: 0
 - ✅ No critical alerts from monitor
 - ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🚨 Git: blofin-stack 61 unpushed commits (push in progress, slow connection)
+- 🔧 Git: blofin-stack 61 unpushed commits (push in progress), moonshot-v2 clean
 
 ## Session Summary (Mar 17 2026)
 
