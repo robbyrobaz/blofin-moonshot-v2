@@ -23,6 +23,22 @@
 
 ## Session Summary (Mar 17 2026)
 
+**Heartbeat 12:02 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🔄 Moonshot Cycle 136 IN PROGRESS (started 10:21, 1h 41m runtime) — backtesting model 6aeb1e430ef8
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE** (21 open)
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 353 models
+- 📊 BT backlog: 194 models
+- 📊 Open positions: 927 (21 champion, 906 non-champion)
+- 📊 Blofin v1: Top 5 BT: macd_divergence+DOT-USDT PF=3.42 (212 trades), rsi_divergence+ETH-USDT PF=3.40 (291), macd_divergence+LINK-USDT PF=3.39 (303), vwap_reversion+DOGE-USDT PF=3.38 (233), ema_crossover+SOL-USDT PF=3.37 (440)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed, 1165 Done
+- 🔧 Git: moonshot clean (catboost logs only), blofin clean
+- 🎯 **CRITICAL FIX CONFIRMED:** TimeoutStopSec=infinity applied, Cycle 136 NOT killed after 1h 41m (was killed at 76min yesterday) — systemd timeout fix WORKING ✅
+
 **Heartbeat 11:31 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
 - ✅ Moonshot Cycle 135 COMPLETE (finished 08:26, 20min runtime, 3h5m ago) — 4 errors
