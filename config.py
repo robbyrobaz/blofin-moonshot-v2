@@ -80,7 +80,7 @@ MIN_FT_TRADES_EVAL = _env("MIN_FT_TRADES_EVAL", 150, int)  # tier 2 eval thresho
 MIN_FT_PF_KEEP = _env("MIN_FT_PF_KEEP", 0.5, float)  # tier 2: catastrophic losers
 MIN_FT_TRADES_EVAL_50 = _env("MIN_FT_TRADES_EVAL_50", 50, int)  # tier 1 eval threshold
 MIN_FT_PF_KEEP_50 = _env("MIN_FT_PF_KEEP_50", 0.9, float)  # tier 1: unprofitable models
-CHALLENGER_COUNT_PER_HOUR = _env("CHALLENGER_COUNT_PER_HOUR", 25, int)  # 100/day = 25 per 4h cycle
+CHALLENGER_COUNT_PER_CYCLE = _env("CHALLENGER_COUNT_PER_CYCLE", 25, int)  # new challengers per cycle (1h)
 BACKTEST_BATCH_SIZE_MAX = _env("BACKTEST_BATCH_SIZE_MAX", 100, int)  # max models per cycle (when CPU idle)
 BACKTEST_BATCH_SIZE_MIN = _env("BACKTEST_BATCH_SIZE_MIN", 10, int)  # min models per cycle (when CPU busy)
 BACKTEST_CPU_THRESHOLD = _env("BACKTEST_CPU_THRESHOLD", 70.0, float)  # CPU % threshold for throttling

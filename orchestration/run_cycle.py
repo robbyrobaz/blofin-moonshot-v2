@@ -202,7 +202,7 @@ def run_cycle():
     try:
         from src.tournament.challenger import generate_challengers
         new_challengers = generate_challengers(
-            db, n=config.CHALLENGER_COUNT_PER_HOUR
+            db, n=config.CHALLENGER_COUNT_PER_CYCLE
         )
         log.info("Generated %d new challengers", len(new_challengers))
     except Exception as e:
