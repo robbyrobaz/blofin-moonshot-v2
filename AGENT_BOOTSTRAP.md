@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 02:32 MST (Heartbeat — All Systems Healthy)
+> Last updated: 2026-03-17 03:02 MST (Heartbeat — All Systems Healthy)
 
 ## Session Summary (Mar 17 2026)
 
@@ -235,6 +235,21 @@
 
 ## Autonomous Crons
 - **Crypto Heartbeat** (this cron) — every 4h, health + pipeline scan + card dispatch
+- **Auto Card Generator** — every 4h, reads pipeline state, creates cards
+- **Profit Hunter** — every 12h, scouts top performers across all pipelines
+- **Blofin Daily Backtest** — 2am, refreshes backtest results
+- **Blofin Top Performer Alert** — 8am, flags FT PF>2.5 candidates
+- **Blofin Weekly FT Review** — Sun 6am, promotes/demotes strategies
+- **Backfill Watchdog** — every 10min, monitors historical data backfill
+
+## Critical Rules
+- ⛔ Never restart blofin-stack-pipeline.timer without Rob's approval
+- ⛔ Never aggregate performance — filter to top performers first
+- ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
+- ⛔ 95% retirement rate is GOOD (tournament philosophy)
+- ⛔ Data migration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
+- ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
+ispatch
 - **Auto Card Generator** — every 4h, reads pipeline state, creates cards
 - **Profit Hunter** — every 12h, scouts top performers across all pipelines
 - **Blofin Daily Backtest** — 2am, refreshes backtest results
