@@ -23,7 +23,28 @@
 
 ## Session Summary (Mar 17 2026)
 
-**🚨 CRITICAL — Heartbeat 14:03 (Mar 17) — TIMER DESIGN FLAW FOUND:**
+**🚨 CRITICAL — Heartbeat 14:33 (Mar 17) — TIMER STILL ON 4H INTERVAL:**
+- ⛔ **CYCLES 137, 138, 139 NEVER COMPLETED** — all started, none finished
+- ⛔ Timer still on 4h interval (`OnCalendar=*-*-* 00/4:05:00`) — bootstrap claimed 1h but config is 4h
+- ⛔ Cycle 137: 10:21-? (no completion), Cycle 138: 12:06-? (no completion), Cycle 139: 13:51-now (45min running)
+- ⛔ Cycles run fine when they complete (132: 49min, 134: 20min, 135: 20min) but something is stopping them
+- ⛔ **NOT a timer design flaw** — timer is working correctly on 4h schedule, problem is cycles not finishing
+- ⛔ TimeoutStopSec=infinity is set correctly (no SIGTERM kills)
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (20 open)
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 373 models (growing — cycles not completing)
+- 📊 BT backlog: 165 models (growing — cycles not completing)
+- 📊 Open positions: 906 (20 champion, 886 non-champion)
+- 🔧 Historical backfill: RUNNING (2 processes)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- 🔧 Git: moonshot clean, blofin 1 modified (today's parquet), 3 unpushed commits
+- 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
+
+**🚨 CRITICAL — Heartbeat 14:03 (Mar 17) — TIMER DESIGN FLAW FOUND (WRONG DIAGNOSIS):**
 - ⛔ **MOONSHOT CYCLES BEING KILLED EVERY HOUR** — 1h timer + `Requires=` directive means systemd STOPS running cycles when triggering new ones
 - ⛔ Cycles 137, 138, 139 ALL killed by SIGTERM (no completion in 4h)
 - ⛔ Cycles take 60-90min when extended data + backtest runs — 1h timer creates guaranteed kills
