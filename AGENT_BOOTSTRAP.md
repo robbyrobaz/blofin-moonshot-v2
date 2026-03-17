@@ -2,7 +2,15 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 15:33 MST (Heartbeat — all systems healthy)
+> Last updated: 2026-03-17 16:01 MST (Heartbeat — services healthy, Cycle 139 in progress, git corruption in blofin-stack)
+
+## 🚨 CRITICAL — BLOFIN-STACK GIT CORRUPTION (Mar 17 16:01)
+- **Issue:** `git status` shows 600+ deleted files when only 1 file (today's parquet) is modified
+- **Root cause:** Corrupted .git/index (bus error on git operations)
+- **Attempted fix:** Removed .git/index, tried `git reset` → same bus error
+- **Status:** ESCALATED TO JARVIS — requires manual intervention
+- **Impact:** Cannot commit/push blofin-stack changes (5 unpushed commits)
+- **Workaround:** Repo still functional, services running, just can't git operations
 
 ## ✅ WATCHDOG TIMEOUT FIX (Mar 17 14:38) — FIXED
 - **Issue:** Cycles 137, 138, 139 all killed after 104-105min (SIGTERM)
@@ -11,7 +19,7 @@
 - **Symptoms:** All 3 cycles actively backtesting when killed (working, not hung)
 - **Fix:** Increased watchdog threshold 90min → 180min (3h), backtest 60min → 120min
 - **Commit:** 64584d1 (deployed to feature/moonshot-2x-leverage)
-- **Status:** Next watchdog check 14:51 will use new 180min threshold
+- **Status:** Cycle 139 survived 130min (started 13:51, still running 16:01) — fix WORKING ✅
 - **Lesson:** Watchdog thresholds must exceed normal cycle duration (not just "worst case hung")
 
 ## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
@@ -23,6 +31,23 @@
 - **Result:** Queue drains 75/hour when CPU idle (was growing +5/4h)
 
 ## Session Summary (Mar 17 2026)
+
+**Heartbeat 16:01 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🔄 Moonshot Cycle 139 IN PROGRESS (started 13:51, 2h 10min runtime) — backtesting model 37603ff3e4fd, normal progress
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE**
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 392 models (stable)
+- 📊 BT backlog: 108 models (draining)
+- 🔧 Historical backfill: COMPLETE (processes ended)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- 🔧 Git: moonshot clean (catboost logs only), **blofin CORRUPTED INDEX** (escalated to Jarvis), 5 unpushed commits
+- 📊 Blofin v1 Top 5 BT: macd_divergence+DOT PF=3.42 (212), rsi_divergence+ETH PF=3.40 (291), macd_divergence+LINK PF=3.39 (303), vwap_reversion+DOGE PF=3.38 (233), ema_crossover+SOL PF=3.37 (440)
+- 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
+- 🎯 **Cycle 139 proving watchdog fix:** 130min runtime, no kill → threshold increase WORKING ✅
 
 **Heartbeat 15:33 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
@@ -42,230 +67,6 @@
 - 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
 - 🎯 **Cycle 138 resolution:** Killed at 13:51:48 by OLD watchdog threshold (105min runtime, threshold was 90min). Script updated 14:38 → new 180min threshold deployed. Cycle 139 is first to run under new threshold.
 
-**Heartbeat 15:02 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- 🔄 Moonshot Cycle 139 IN PROGRESS (started 13:51, 71min runtime) — backtesting model 8f52719b59f6 (long), fold 2, normal progress
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (20 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 380 models (stable)
-- 📊 BT backlog: 141 models (draining)
-- 📊 Open positions: 906 (20 champion, 886 non-champion)
-- 🔧 Historical backfill: NOT RUNNING (process ended)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (catboost logs only), blofin 1 modified (today's parquet), 4 unpushed commits
-- 🎯 **Deployed card verified:** reversal+DOT-USDT leverage=3, tier=2 in DB ✅
-- 📊 Blofin v1 Top 5 BT: macd_divergence+DOT PF=3.42 (212), rsi_divergence+ETH PF=3.40 (291), macd_divergence+LINK PF=3.39 (303), vwap_reversion+DOGE PF=3.38 (233), ema_crossover+SOL PF=3.37 (440)
-
-**🚨 CRITICAL — Heartbeat 14:33 (Mar 17) — TIMER STILL ON 4H INTERVAL:**
-- ⛔ **CYCLES 137, 138, 139 NEVER COMPLETED** — all started, none finished
-- ⛔ Timer still on 4h interval (`OnCalendar=*-*-* 00/4:05:00`) — bootstrap claimed 1h but config is 4h
-- ⛔ Cycle 137: 10:21-? (no completion), Cycle 138: 12:06-? (no completion), Cycle 139: 13:51-now (45min running)
-- ⛔ Cycles run fine when they complete (132: 49min, 134: 20min, 135: 20min) but something is stopping them
-- ⛔ **NOT a timer design flaw** — timer is working correctly on 4h schedule, problem is cycles not finishing
-- ⛔ TimeoutStopSec=infinity is set correctly (no SIGTERM kills)
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (20 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 373 models (growing — cycles not completing)
-- 📊 BT backlog: 165 models (growing — cycles not completing)
-- 📊 Open positions: 906 (20 champion, 886 non-champion)
-- 🔧 Historical backfill: RUNNING (2 processes)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean, blofin 1 modified (today's parquet), 3 unpushed commits
-- 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
-
-**🚨 CRITICAL — Heartbeat 14:03 (Mar 17) — TIMER DESIGN FLAW FOUND (WRONG DIAGNOSIS):**
-- ⛔ **MOONSHOT CYCLES BEING KILLED EVERY HOUR** — 1h timer + `Requires=` directive means systemd STOPS running cycles when triggering new ones
-- ⛔ Cycles 137, 138, 139 ALL killed by SIGTERM (no completion in 4h)
-- ⛔ Cycles take 60-90min when extended data + backtest runs — 1h timer creates guaranteed kills
-- ⛔ Timer scheduled for next run (14:05) will kill current Cycle 139 (started 13:51, 12min runtime)
-- ⛔ **ROOT CAUSE:** Commit 707e591 changed interval 4h→1h without adjusting `Requires=` or checking cycle duration
-- ⛔ **FIX REQUIRED:** Either (1) revert to 4h timer, OR (2) remove `Requires=moonshot-v2.service` from timer unit
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (21 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 370 models (cannot drain — cycles never complete)
-- 📊 BT backlog: 150 models (cannot drain — cycles never complete)
-- 📊 Open positions: 927 (21 champion, 906 non-champion) — 464 LONG, 463 SHORT
-- 🔧 Historical backfill: RUNNING (1 process, 6h 34m runtime since 07:29)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (catboost logs only), blofin 3 unpushed commits (today's parquet, reversal+DOT card, auto-commit)
-- 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
-
-**Heartbeat 13:32 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- 🔄 Moonshot Cycle 137 IN PROGRESS (started 12:06, 86min runtime) — backtesting model f39eb2083514 (long), normal progress
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (28 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 364 models (stable)
-- 📊 BT backlog: 167 models (draining ~100/cycle when CPU<70%)
-- 📊 Open positions: 927 (28 champion, 899 non-champion) — 464 LONG, 463 SHORT
-- 🔧 Historical backfill: RUNNING (1 process, 6h 4m runtime since 07:29)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (catboost logs only), blofin 2 unpushed commits (today's parquet, reversal+DOT card commit)
-- 🎯 **Deployed card verified:** reversal+DOT-USDT leverage=3, tier=2 in DB ✅
-- 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
-
-**Heartbeat 13:02 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- 🔄 Moonshot Cycle 137 IN PROGRESS (started 12:06, 56min runtime) — backtesting models, normal progress
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.6837 — **ACTIVE** (21 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 359 models (stable)
-- 📊 BT backlog: 191 models (draining ~100/cycle when CPU<70%)
-- 📊 Open positions: 927 (21 champion, 906 non-champion)
-- 🔧 Historical backfill: RUNNING (1 process, 5h 33m runtime since 07:29)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed, 1 recent Done (reversal+DOT 3x scale — DEPLOYED ✅)
-- 🔧 Git: moonshot clean (catboost logs only), blofin clean (today's parquet, 2 unpushed commits <10 threshold)
-- 🎯 **Deployed card verified:** reversal+DOT-USDT leverage=3, tier=2 in DB
-
-**Heartbeat 12:32 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- 🔄 Moonshot Cycle 137 IN PROGRESS (started 12:06, 27min runtime) — backtesting models
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE**
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: ~353 models (stable)
-- 📊 BT backlog: ~194 models (draining 100/cycle when CPU<70%)
-- 📊 Open positions: ~927
-- 🔧 Historical backfill: RUNNING (1 process, 5h runtime since 07:29)
-- 🔧 Builders running: 2 (1 NQ card In Progress, 1 crypto card dispatched — reversal+DOT 3x scale)
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 2 In Progress, 0 Failed
-- 🔧 Git: moonshot clean, blofin clean (both repos no uncommitted changes, no unpushed commits)
-- 🎯 **Dispatched:** reversal+DOT 3x leverage scale (FT_PF=5.06) — card c_0d3274eeb9c38_19cfd349bfc
-
-**Heartbeat 12:02 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- 🔄 Moonshot Cycle 136 IN PROGRESS (started 10:21, 1h 41m runtime) — backtesting model 6aeb1e430ef8
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE** (21 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 353 models
-- 📊 BT backlog: 194 models
-- 📊 Open positions: 927 (21 champion, 906 non-champion)
-- 📊 Blofin v1: Top 5 BT: macd_divergence+DOT-USDT PF=3.42 (212 trades), rsi_divergence+ETH-USDT PF=3.40 (291), macd_divergence+LINK-USDT PF=3.39 (303), vwap_reversion+DOGE-USDT PF=3.38 (233), ema_crossover+SOL-USDT PF=3.37 (440)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed, 1165 Done
-- 🔧 Git: moonshot clean (catboost logs only), blofin clean
-- 🎯 **CRITICAL FIX CONFIRMED:** TimeoutStopSec=infinity applied, Cycle 136 NOT killed after 1h 41m (was killed at 76min yesterday) — systemd timeout fix WORKING ✅
-
-**Heartbeat 11:31 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 135 COMPLETE (finished 08:26, 20min runtime, 3h5m ago) — 4 errors
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE** (21 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 347 models
-- 📊 BT backlog: 209 models
-- 📊 Open positions: 927 (21 champion, 906 non-champion)
-- 📊 Blofin v1: Top 5 BT: macd_divergence+DOT-USDT PF=3.42 (212 trades), rsi_divergence+ETH-USDT PF=3.40 (291), macd_divergence+LINK-USDT PF=3.39 (303), vwap_reversion+DOGE-USDT PF=3.38 (233), ema_crossover+SOL-USDT PF=3.37 (440)
-- 🔧 Historical backfill: RUNNING (2 processes active, started 07:29, 4h2m runtime)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (catboost logs only), blofin clean
-- ⏰ Timer: Last cycle 08:26, next cycle unknown (checking journal) — systemd timeout fix HOLDING ✅
-
-**Heartbeat 10:03 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 135 COMPLETE (finished 08:26, 20min runtime, 97min ago) — 4 errors
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (21 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 332 models (draining 20-75/cycle depending on CPU)
-- 📊 BT backlog: 219 models (draining 20-75/cycle depending on CPU)
-- 📊 Open positions: 958 (21 champion, 937 non-champion)
-- 📊 Blofin v1: Top 5 BT: macd_divergence+DOT PF=3.42 (212 trades), rsi_divergence+ETH PF=3.40 (291), macd_divergence+LINK PF=3.39 (303), vwap_reversion+DOGE PF=3.38 (233), ema_crossover+SOL PF=3.37 (440)
-- 🔧 Historical backfill: RUNNING (1 process active)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (catboost logs only), blofin clean
-- ⏰ Timer: Next cycle 11:05 (62min away) — systemd timeout fix HOLDING ✅
-
-**Heartbeat 09:32 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- 🔄 Moonshot Cycle 136 STARTING (09:32, last cycle 135 finished 08:26)
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (21 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 324 models (draining 20-75/cycle depending on CPU)
-- 📊 BT backlog: 248 models (draining 20-75/cycle depending on CPU)
-- 📊 Open positions: 958 (21 champion, 937 non-champion)
-- 📊 Blofin v1: Top 5 BT: macd_divergence+DOT PF=3.42 (212 trades), rsi_divergence+ETH PF=3.40 (291), macd_divergence+LINK PF=3.39 (303), vwap_reversion+DOGE PF=3.38 (233), ema_crossover+SOL PF=3.37 (440)
-- 🔧 Historical backfill: RUNNING (started 07:29, 2h3m runtime)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (catboost logs only), blofin clean
-- ⏰ Timer: Cycle 136 in progress — systemd timeout fix HOLDING ✅
-
-**Heartbeat 09:03 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 135 COMPLETE (finished 08:26, 20min runtime, 37min ago) — 4 errors
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=68.37% — **ACTIVE** (21 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 311 models (draining 20-75/cycle depending on CPU)
-- 📊 BT backlog: 270 models (draining 20-75/cycle depending on CPU)
-- 📊 Open positions: 958 (21 champion, 937 non-champion) — 479 LONG, 479 SHORT
-- 📊 Blofin v1: Top 5 BT: macd_divergence+DOT PF=3.42 (212 trades), rsi_divergence+ETH PF=3.40 (291), macd_divergence+LINK PF=3.39 (303), vwap_reversion+DOGE PF=3.38 (233), ema_crossover+SOL PF=3.37 (440)
-- 🔧 Historical backfill: RUNNING (2 processes, started 07:29, 1h34m runtime)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (catboost logs only), blofin clean
-- ⏰ Timer: Next cycle 09:05 (2min away) — systemd timeout fix HOLDING ✅
-
-**Heartbeat 08:32 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 135 COMPLETE (finished 08:26, 20min runtime, 6min ago) — 4 errors
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=0.68% — **ACTIVE** (21 open)
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 310 models (draining 20-75/cycle depending on CPU)
-- 📊 BT backlog: 252 models (draining 20-75/cycle depending on CPU)
-- 📊 Open positions: 959 (21 champion, 938 non-champion)
-- 📊 Blofin v1: Top 5 FT: reversal+DOT PF=5.06 (3 trades), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
-- 🔧 Historical backfill: RUNNING (2 processes, started 07:29, 1h3m runtime)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (cycle.lock untracked), blofin 1 modified (brain/blofin_status.json)
-- ⏰ Timer: Next cycle 09:05 (30min away) — systemd timeout fix HOLDING ✅
-
-**Heartbeat 08:02 (Mar 17):**
-- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
-- ✅ Moonshot Cycle 134 COMPLETE (finished 07:56, 20min runtime, 6min ago) — 4 errors
-- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE**
-- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
-- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
-- 📊 FT backlog: 310 models
-- 📊 BT backlog: 252 models
-- 🔧 Historical backfill: RUNNING (2 processes, started 07:29, 33min runtime)
-- 🔧 Builders running: 0
-- ✅ No critical alerts from monitor
-- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
-- 🔧 Git: moonshot clean (cycle.lock untracked), blofin 1 modified (brain/blofin_status.json)
-- ⏰ Timer: Next cycle 08:05 (1min away) — systemd timeout fix HOLDING ✅
-
 ## Moonshot v2 — Tournament Status
 
 ### Champions (2 active — SHORT + new_listing only)
@@ -279,18 +80,17 @@
   - **Workaround: Rule-based `new_listing` strategy active (484 LONG positions open)**
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
-### Tournament Numbers (Latest cycle: 135 complete)
+### Tournament Numbers (Latest cycle: 139 in progress)
 | Stage | Count |
 |-------|-------|
 | Champion | 2 (short/new_listing) |
-| Forward Test | 310 |
-| Backtest | 252 |
+| Forward Test | 392 |
+| Backtest | 108 |
 | Retired | 1,432+ |
 | **Total** | **2,000+** |
 
 ### Coins & Positions
 - 471 total symbols tracked
-- Open positions: 959 (21 champion, 938 non-champion)
 - `days_since_listing` computed each cycle (fixed Mar 16)
 
 ### Direction-Specific Gates (Mar 14 2026)
@@ -304,13 +104,20 @@
 - FK constraint required dummy model entry in tournament_models
 
 ### Services (All ACTIVE)
-- `moonshot-v2.timer` — 1h cycle (hourly at :05, next 09:05 MST)
+- `moonshot-v2.timer` — 1h cycle (hourly at :05, next 17:05 MST)
 - `moonshot-v2-social.timer` — 1h social signals (active)
 - `moonshot-v2-dashboard.service` — HTTP 200 on port 8893
 - Dashboard: http://127.0.0.1:8893/
-- **Backfill:** Historical data backfill RUNNING (2 processes, started 07:29)
+- **Backfill:** Historical data backfill COMPLETE (processes ended)
 
 ### Cycle Performance — SYSTEMD TIMEOUT FIX HOLDING ✅
+
+**Cycle 139: IN PROGRESS (started 13:51)**
+- Runtime so far: 2h 10min (130min)
+- Status: Actively backtesting (last log 16:00 — model 37603ff3e4fd)
+- **Watchdog fix proven:** Survived past old 90min threshold, still running at 130min ✅
+- FT queue: 392 (stable)
+- BT queue: 108 (draining)
 
 **Cycle 135: COMPLETED (08:26)**
 - Started: 08:05 → Finished: 08:26 (20min 37sec)
@@ -330,6 +137,7 @@
 1. Batch limit (20/cycle) prevents backtest infinite loops — commit 4cd2f59
 2. Two-tier FT retirement (PF<0.9 at 50 trades) — commit c7c71b3
 3. **TimeoutStopSec=120 in moonshot-v2.service — commit TBD (deployed Mar 17 07:36)**
+4. **Watchdog threshold 90min → 180min — commit 64584d1 (deployed Mar 17 14:38)**
 
 **Lesson:** Cycles take 60+ min (not 15-20). Extended data + backtest + FT scoring = slow but working. NEVER kill to investigate.
 
