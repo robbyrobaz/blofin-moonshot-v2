@@ -5,7 +5,7 @@ import json
 import random
 import time
 
-from config import CHALLENGER_COUNT_PER_HOUR, log
+from config import CHALLENGER_COUNT_PER_CYCLE, log
 from src.db.schema import get_db
 
 # ── Parameter space for random sampling ─────────────────────────────────────
