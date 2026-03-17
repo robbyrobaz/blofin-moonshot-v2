@@ -24,6 +24,23 @@
 
 ## Session Summary (Mar 17 2026)
 
+**Heartbeat 15:02 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🔄 Moonshot Cycle 139 IN PROGRESS (started 13:51, 71min runtime) — backtesting model 8f52719b59f6 (long), fold 2, normal progress
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (20 open)
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 380 models (stable)
+- 📊 BT backlog: 141 models (draining)
+- 📊 Open positions: 906 (20 champion, 886 non-champion)
+- 🔧 Historical backfill: NOT RUNNING (process ended)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- 🔧 Git: moonshot clean (catboost logs only), blofin 1 modified (today's parquet), 4 unpushed commits
+- 🎯 **Deployed card verified:** reversal+DOT-USDT leverage=3, tier=2 in DB ✅
+- 📊 Blofin v1 Top 5 BT: macd_divergence+DOT PF=3.42 (212), rsi_divergence+ETH PF=3.40 (291), macd_divergence+LINK PF=3.39 (303), vwap_reversion+DOGE PF=3.38 (233), ema_crossover+SOL PF=3.37 (440)
+
 **🚨 CRITICAL — Heartbeat 14:33 (Mar 17) — TIMER STILL ON 4H INTERVAL:**
 - ⛔ **CYCLES 137, 138, 139 NEVER COMPLETED** — all started, none finished
 - ⛔ Timer still on 4h interval (`OnCalendar=*-*-* 00/4:05:00`) — bootstrap claimed 1h but config is 4h
