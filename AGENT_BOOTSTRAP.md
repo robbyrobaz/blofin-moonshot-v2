@@ -23,6 +23,23 @@
 
 ## Session Summary (Mar 17 2026)
 
+**Heartbeat 13:32 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🔄 Moonshot Cycle 137 IN PROGRESS (started 12:06, 86min runtime) — backtesting model f39eb2083514 (long), normal progress
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22 — **ACTIVE** (28 open)
+- 🚨 **LONG champion:** NONE (by design — 99.8% of LONG models lose money, avg PF=0.53)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 364 models (stable)
+- 📊 BT backlog: 167 models (draining ~100/cycle when CPU<70%)
+- 📊 Open positions: 927 (28 champion, 899 non-champion) — 464 LONG, 463 SHORT
+- 🔧 Historical backfill: RUNNING (1 process, 6h 4m runtime since 07:29)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- 🔧 Git: moonshot clean (catboost logs only), blofin 2 unpushed commits (today's parquet, reversal+DOT card commit)
+- 🎯 **Deployed card verified:** reversal+DOT-USDT leverage=3, tier=2 in DB ✅
+- 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
+
 **Heartbeat 13:02 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
 - 🔄 Moonshot Cycle 137 IN PROGRESS (started 12:06, 56min runtime) — backtesting models, normal progress
