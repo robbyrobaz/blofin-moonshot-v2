@@ -2,20 +2,23 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 19:32 MST (Heartbeat — ALL SYSTEMS NOMINAL)
+> Last updated: 2026-03-17 20:03 MST (Heartbeat Scan)
 
-## 🚨 HEARTBEAT STATUS (Mar 17 19:03) — CRITICAL: TIMER MISCONFIGURED
-- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper (activating), blofin-dashboard, moonshot-v2-dashboard
-- 🔄 **Moonshot Cycle 140:** Started 18:03, running 60min (backtesting 25/75 done) — HEALTHY
-- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22) — HEALTHY
-- ⚠️ **LONG champion MISSING:** no profitable LONG models (by design)
-- 📊 **Backtest queue:** 75 models (stable)
-- 📊 **FT queue:** 410 models (+7 from last heartbeat)
-- ✅ **Git status:** moonshot clean (catboost logs), blofin-stack 12 unpushed commits (>10 threshold, PUSH NEEDED)
-- ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed — no work needed
-- ✅ **Critical alerts:** None
-- 🔧 **Historical backfill:** PID 643188 running (started 18:58, 1-worker mode)
-- ✅ **Timer FIXED:** Removed dual OnCalendar, 4-hour schedule restored, next trigger 20:05
+## 🚨 HEARTBEAT STATUS (Mar 17 20:03) — CRITICAL: LONG PIPELINE DEAD
+- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
+- 🔄 **Moonshot Cycle:** Started 18:03, running 2h (backtest stage, 20 models processing) — NORMAL RUNTIME
+- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=0.68%) — HEALTHY ✅
+- 🚨 **LONG PIPELINE BROKEN:** NO champion + ALL 30 LONG FT models have 0 trades — models pass backtest but never generate signals
+- ✅ **New listing champion:** 0 trades (waiting for next ≤7d coin)
+- 📊 **FT backlog:** 423 models total (393 SHORT healthy, 30 LONG dead)
+- 📊 **Backtest queue:** 32 models (15 SHORT, 17 LONG)
+- 📊 **Retired:** 1,792 models (709 SHORT, 1,083 LONG — LONG has 53% retirement vs 35% SHORT)
+- 📊 **Open positions:** 884
+- ✅ **Git status:** moonshot clean (catboost logs safe to ignore), blofin-stack CLEAN (15 commits pushed ✅)
+- ✅ **Kanban:** 0 Planned, 1 In Progress (NQ vwap_fade), 0 Failed
+- ✅ **Critical alerts:** None from monitor
+- 🔧 **Historical backfill:** PID 658749 running (started 19:05, 92 symbols done, 2 workers)
+- 🚨 **INVESTIGATION NEEDED:** Why do LONG models pass BT gates but never fire in FT?
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 19:03) — DUAL OnCalendar BREAKS SYSTEMD
 - **Root cause:** Timer has TWO OnCalendar directives (hourly + *-*-* *:05:00)
