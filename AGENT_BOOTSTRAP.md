@@ -4,20 +4,20 @@
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
 > Last updated: 2026-03-17 21:32 MST (Heartbeat Scan)
 
-## 🚨 HEARTBEAT STATUS (Mar 17 21:32) — CYCLE 142 IN PROGRESS, ALL HEALTHY ✅
-- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper (activating), blofin-dashboard, moonshot-v2-dashboard
-- 🔄 **Moonshot Cycle 142:** Running 14min (started 21:18), extended data fetch stage — **NORMAL ✅**
-- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (2h 32min), "Active: active (waiting)" ✅
+## 🚨 HEARTBEAT STATUS (Mar 17 22:03) — CYCLE 142 IN PROGRESS, ALL HEALTHY ✅
+- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
+- 🔄 **Moonshot Cycle 142:** Running 44min (started 21:18), label loading stage — **NORMAL ✅**
+- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (2h 1min), "Active: active (waiting)" ✅
 - ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=68.37%) — HEALTHY ✅
 - 🚨 **LONG champion:** NONE (30 LONG FT models, 0 trades — models pass BT but never fire)
-- 📊 **FT backlog:** 432 models total (402 SHORT, 30 LONG dead)
-- 📊 **Backtest queue:** Unknown (cycle in progress)
-- 📊 **Open positions:** 884
-- ⚠️ **Git status:** moonshot clean, blofin-stack 18 commits unpushed (git push hung again, killed)
-- ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed
+- 📊 **FT backlog:** 436 models total (406 SHORT, 30 LONG dead)
+- 📊 **Backtest queue:** 15 models (draining)
+- 📊 **Open positions:** 871 (435 LONG, 436 SHORT)
+- ⚠️ **Git status:** moonshot clean (catboost logs only), blofin-stack 18 commits unpushed + 1 modified (today's parquet)
+- ✅ **Kanban:** 0 Planned crypto cards, 0 In Progress crypto, 0 Failed crypto (1 NQ card active)
 - ✅ **Critical alerts:** None from monitor
-- 🔧 **Historical backfill:** PID 847140 running (2 workers, restarted 21:23)
-- 📊 **Blofin v1 Top 5 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
+- 🔧 **Historical backfill:** PID 847140 running (41min, 2 workers, parquet writes active)
+- 📊 **Blofin v1 Top 5 FT:** rsi_divergence+CVX PF≈4.00 (5), reversal+NEIRO PF≈4.00 (5), candle_momentum_burst+BANANA PF≈3.00 (4), reversal+NAORIS PF≈3.00 (4), reversal+BLUR PF≈3.00 (4)
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
