@@ -1,0 +1,23 @@
+# Crypto Agent Bootstrap
+
+> This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
+> **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
+> Last updated: 2026-03-17 20:35 MST (Heartbeat Scan)
+
+## 🚨 HEARTBEAT STATUS (Mar 17 20:35) — CYCLE HEALTHY, TIMER BROKEN
+- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
+- 🔄 **Moonshot Cycle 140:** Running 2h 31min (started 18:03), backtest stage (fold 1-3), CPU 1110% (11 cores) — **WORKING ✅**
+- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=0.68%) — HEALTHY ✅
+- 🚨 **LONG PIPELINE BROKEN:** NO champion + ALL 30 LONG FT models have 0 trades — models pass backtest but never generate signals
+- ✅ **New listing champion:** 0 trades (waiting for next ≤7d coin)
+- 📊 **FT backlog:** 427 models total (397 SHORT healthy, 30 LONG dead)
+- 📊 **Backtest queue:** 20 models
+- 📊 **Retired:** 1,792+ models
+- 📊 **Open positions:** 884
+- ⚠️ **Git status:** moonshot clean (catboost logs safe), blofin-stack 15 commits unpushed (push HUNG, killed)
+- ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed
+- ✅ **Critical alerts:** None from monitor
+- 🔧 **Historical backfill:** PID 658749 running (started 19:05, 92 symbols done)
+- 🚨 **TIMER BROKEN:** `OnCalendar=*-*-* 00/4:05:00` shows next elapse 20:05 (27min ago) BUT `Trigger: n/a` means systemd disabled timer — Cycle 140 won't restart when done
+- 🚨 **ROOT CAUSE:** Timer file has ONLY ONE OnCalendar (hourly was removed Mar 17), but systemd still shows n/a trigger — likely needs daemon-reload
+- 🚨 **INVESTIGATION NEEDED:** Why do LONG models pass BT gates but never fire in FT?
