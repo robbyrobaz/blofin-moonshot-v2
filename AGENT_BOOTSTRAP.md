@@ -122,8 +122,8 @@
 - Paper trading active (35K+ paper trades, BT complete)
 - Services: `blofin-stack-ingestor`, `blofin-stack-paper`, `blofin-dashboard` — ALL ACTIVE
 - Dashboard: http://127.0.0.1:8892 (HTTP 200)
-- **Top 5 FT performers (early):** reversal/DOT (PF 5.06), reversal/LINK (PF 3.99), bb_squeeze/ADA (PF 2.61), bb_squeeze/BTC (PF 2.34)
-- Not ready for promotion (only 3 trades each, need ≥100 trades + PF≥1.35)
+- **Top 5 FT performers (early):** reversal/LINK (BT_PF 3.35), bb_squeeze/BTC (BT_PF 2.65), bb_squeeze/ADA (BT_PF 2.63), rsi_divergence/DOT (BT_PF 1.76), reversal/DOT (BT_PF 1.65)
+- Not ready for promotion (only 3 FT trades each, need ≥100 trades + BT_PF≥1.35)
 
 ### Ranking & Promotion
 - Ranking: `bt_pnl_pct` (compounded PnL %)
@@ -152,3 +152,4 @@
 - ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
 - ⛔ **CHECK CURRENT TIME FIRST** — parse full timestamps (YYYY-MM-DD HH:MM), not just HH:MM
 - ⛔ **TimeoutStopSec should be SHORT** — 30-600s max, NEVER infinity (how fast zombies die)
+es die)
