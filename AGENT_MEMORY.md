@@ -95,3 +95,35 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 - **Your BOOTSTRAP.md and MEMORY.md are symlinked from the repo**
 - Update `blofin-moonshot-v2/AGENT_BOOTSTRAP.md` and `AGENT_MEMORY.md` directly
 - These are the files that load at session boot — keep them current!
+
+## Backfill Symbol Counting (Mar 17 2026 — STOP SCREWING THIS UP)
+
+### The ONLY Correct Method
+Count symbols with:
+1. **Size filter:** >10MB total parquet files = actually completed
+2. **Timestamp filter:** dir mtime BEFORE test start = finished before baseline
+
+**Code:**
+```python
+for symbol_dir in os.listdir('/mnt/data/blofin_tickers/raw'):
+    ticker_path = os.path.join(raw_dir, symbol_dir, 'tickers')
+    if os.path.isdir(ticker_path):
+        files = [f for f in os.listdir(ticker_path) if f.endswith('.parquet')]
+        total_size = sum(os.path.getsize(os.path.join(ticker_path, f)) for f in files)
+        dir_mtime = os.path.getmtime(ticker_path)
+        if total_size > 10_000_000 and dir_mtime < test_start_time:
+            completed.append(symbol_dir)
+```
+
+### What NOT to Do
+❌ `find /mnt/data/blofin_tickers/raw -type d -name tickers | wc -l` — counts in-progress
+❌ Count without size filter — includes incomplete downloads
+❌ Count without timestamp filter — includes symbols completed during/after test
+
+### Why I Keep Failing
+- Used directory count 3 times, got wrong numbers 3 times
+- Declared tests FAILED when they actually SUCCEEDED
+- Rob had to correct me every 2 hours
+- "I don't have to teach you every 2 hours!" — Mar 17 21:33
+
+**Actual test results (19:05-20:05):** 75→79 = +4 symbols = SUCCESS (not FAILURE as I claimed)
