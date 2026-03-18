@@ -10,7 +10,8 @@ ExecStart=/home/rob/.openclaw/workspace/blofin-moonshot-v2/.venv/bin/python orch
 Environment=PYTHONPATH=/home/rob/.openclaw/workspace/blofin-moonshot-v2
 StandardOutput=journal
 StandardError=journal
-TimeoutStartSec=1800
+TimeoutStartSec=3600
+TimeoutStopSec=30
 
 [Install]
 WantedBy=default.target

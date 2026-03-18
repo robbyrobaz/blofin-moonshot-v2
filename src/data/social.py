@@ -3,6 +3,7 @@
 import re
 import json
 import time
+import signal
 import requests
 from config import (
     FEAR_GREED_URL,
@@ -278,22 +279,41 @@ def collect_github(db) -> int:
     return count
 
 
+class CollectorTimeout(Exception):
+    """Raised when a collector exceeds its timeout."""
+    pass
+
+
+def _collector_timeout_handler(signum, frame):
+    """Signal handler for collector timeouts."""
+    raise CollectorTimeout("collector exceeded timeout")
+
+
 def run_social_collection(db):
-    """Master function: run all social data collectors with error isolation."""
+    """Master function: run all social data collectors with error isolation and timeouts."""
     log.info("run_social_collection: starting")
 
+    # Each collector has a timeout (in seconds) to prevent hangs
     collectors = [
-        ("fear_greed", lambda: collect_fear_greed(db)),
-        ("coingecko_trending", lambda: collect_coingecko_trending(db)),
-        ("rss_feeds", lambda: collect_rss_feeds(db)),
-        ("reddit", lambda: collect_reddit(db)),
-        ("github", lambda: collect_github(db)),
+        ("fear_greed", lambda: collect_fear_greed(db), 30),
+        ("coingecko_trending", lambda: collect_coingecko_trending(db), 30),
+        ("rss_feeds", lambda: collect_rss_feeds(db), 60),
+        ("reddit", lambda: collect_reddit(db), 120),  # Max 2 min for Reddit
+        ("github", lambda: collect_github(db), 60),
     ]
 
-    for name, collector in collectors:
+    for name, collector, timeout in collectors:
         try:
+            # Set timeout alarm
+            signal.signal(signal.SIGALRM, _collector_timeout_handler)
+            signal.alarm(timeout)
             collector()
+            signal.alarm(0)  # Cancel alarm on success
+        except CollectorTimeout:
+            signal.alarm(0)
+            log.warning("run_social_collection: %s timed out after %ds, skipping", name, timeout)
         except Exception as e:
+            signal.alarm(0)
             log.warning("run_social_collection: %s failed: %s", name, e)
 
     log.info("run_social_collection: complete")
