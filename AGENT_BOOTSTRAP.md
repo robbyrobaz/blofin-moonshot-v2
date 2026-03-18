@@ -25,13 +25,13 @@
 - ✅ **Historical backfill:** WORKING (PID 1441185, 1h 3m runtime, 2 ESTABLISHED API connections)
 - ✅ **SQLite ingestor:** WORKING (PID 842369, production service, 8h+ runtime is normal)
 
-**Current status (05:47):**
-- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
-- 🚨 **NO MOONSHOT CYCLE RUNNING** (killed 05:43, not restarted yet)
-- ✅ **Historical backfill:** ACTIVE (1h 3m in, normal progress)
-- ✅ **Load average:** 4.41 (down from 18.23 after killing hung processes)
-- 📊 **Tournament status:** 2 champions, 451 FT, 7 backtest, 1,864 retired
-- 🔧 **Git status:** Not checked yet (will check next heartbeat)
+**Current status (06:02):**
+- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard (HTTP 200)
+- 🚨 **Moonshot cycle:** NONE running (last killed 05:41:32 by systemd, was still the Mar 16 hung cycle PID 1397390)
+- ✅ **Timer status:** HEALTHY, next trigger 08:05 MST (2h 3min)
+- ✅ **Historical backfill:** COMPLETE (no processes running)
+- 📊 **Tournament status:** 2 champions (short+new_listing), 453 FT, 3 BT, 1,866 retired, 932 open positions
+- 🔧 **Git status:** moonshot clean (catboost logs only), blofin 19 unpushed commits (<25 threshold)
 
 **What I learned:**
 1. **ALWAYS check current date+time FIRST** — use `date` to know NOW
