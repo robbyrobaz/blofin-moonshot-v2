@@ -10,21 +10,40 @@
 - **Why 25?** All data is committed locally + backed up. Push failures are NON-URGENT until Rob fixes auth.
 - **Git hygiene routine:** Keep running (commit regularly), don't alert on push failures until auth fixed.
 
-## 🚨 HEARTBEAT STATUS (Mar 18 05:31) — TIMER BUG RECURRENCE FIXED ✅
-- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard (HTTP 200)
-- ✅ **Cycle 143:** COMPLETE at 01:15 (71min runtime, 0 errors)
-- 🚨 **Timer bug recurrence:** Trigger=n/a after last cycle → FIXED with daemon-reload+restart, next fire 08:05 MST ✅
-- ✅ **SHORT champion:** de44f72dbb01 (catboost) — **ACTIVE**
-- 🚨 **LONG champion:** NONE (by design — no profitable LONG models found)
-- ✅ **New listing champion:** active (waiting for next ≤7d coin)
-- 📊 **FT backlog:** 450 models (stable)
-- 📊 **Backtest queue:** 8 models (draining well)
-- 📊 **Open positions:** 932 (total)
-- 🔧 **Git status:** moonshot clean (catboost logs), blofin-stack 19 UNPUSHED (<25 threshold, not urgent)
-- ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed
-- ✅ **Critical alerts:** None
-- 🔧 **Historical backfill:** RUNNING (PID 1441185, started 04:40, 51min runtime, normal)
-- 📊 **Blofin v1 Top 5 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), reversal+AVAX PF=1.59 (1)
+## 🚨 CRITICAL INCIDENT (Mar 18 05:43) — 37-HOUR HUNG CYCLE + INGESTOR KILLED ✅
+
+**What happened:**
+- 🚨 **Moonshot Cycle 126:** HUNG for 37 HOURS (started Mar 16 16:25, killed Mar 18 05:43)
+  - Last log: "fetch_all_extended: starting for 470 symbols" at Mar 16 16:25:32
+  - Process alive (PID 1397390, 599% CPU) but doing NOTHING (0 network connections)
+  - Rob: "do you know what the time and day is!!" — I misread Mar 16 as "today"
+  - **ROOT CAUSE:** My timestamp parsing was BROKEN — compared HH:MM not YYYY-MM-DD HH:MM
+- 🚨 **Parquet Ingestor:** HUNG for 8h 18m (started Mar 17 21:25, killed Mar 18 05:44)
+  - PID 849143, 100% CPU sustained, 1 CLOSE_WAIT socket (dead connection)
+  - File NOT growing (negative growth = compaction, not writing)
+  - Was experimental ingestor (not production), killed alongside old ingestor
+- ✅ **Historical backfill:** WORKING (PID 1441185, 1h 3m runtime, 2 ESTABLISHED API connections)
+- ✅ **SQLite ingestor:** WORKING (PID 842369, production service, 8h+ runtime is normal)
+
+**Current status (05:47):**
+- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
+- 🚨 **NO MOONSHOT CYCLE RUNNING** (killed 05:43, not restarted yet)
+- ✅ **Historical backfill:** ACTIVE (1h 3m in, normal progress)
+- ✅ **Load average:** 4.41 (down from 18.23 after killing hung processes)
+- 📊 **Tournament status:** 2 champions, 451 FT, 7 backtest, 1,864 retired
+- 🔧 **Git status:** Not checked yet (will check next heartbeat)
+
+**What I learned:**
+1. **ALWAYS check current date+time FIRST** — use `date` to know NOW
+2. **Parse FULL timestamps** — "2026-03-16 16:25" vs "2026-03-18 05:43" = 37h elapsed
+3. **Calculate elapsed properly** — `date -d '...' +%s` then subtract for exact seconds
+4. **I CAN edit crons** — never say "I can't" when deflecting responsibility
+5. **Heartbeat cron UPDATED** — now includes timestamp parsing + auto-kill if >2h hung
+
+**Next steps:**
+- Heartbeat will check cycle age every 30min, auto-kill if >2h old
+- Timer will fire next cycle at 08:05 MST (already scheduled)
+- Update MEMORY.md with timestamp parsing lessons
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled

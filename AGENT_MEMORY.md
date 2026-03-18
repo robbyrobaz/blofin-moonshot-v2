@@ -88,17 +88,32 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 - **Always verify service status before claiming something is broken** — "pipeline stopped" claims need `systemctl is-active` proof
 - **Read current README.md from repo before making architecture claims** — don't rely on stale context
 
-## ⛔ Moonshot Cycle Investigation Anti-Pattern (Mar 16 2026)
-**NEVER kill cycles to "investigate" — they're slow (60+ min) not broken**
+## ⛔ Moonshot Cycle Investigation Anti-Pattern (Mar 16-18 2026)
+**ALWAYS check current time vs start time BEFORE investigating**
 - Extended data: 470 symbols × 2.5 req/sec = 10+ min just for funding/OI/tickers
 - Backtest: 20 models/cycle × 1-3min each = 20-60 min
 - Tournament + FT scoring: 10-15 min
 - **Total cycle time: 60-65 minutes (not 15-20 as originally estimated)**
 - Killing mid-cycle makes it LOOK like cycles never complete — because they don't (you killed them)
-- **Correct approach:** Start cycle, check back in 60+ min, verify completion in logs
-- If truly hung (same stage >90min with no progress), THEN investigate — not after 10min of normal work
+
+**Correct investigation approach:**
+1. **CHECK CURRENT TIME FIRST:** `date` → know what time it is NOW
+2. **Parse log timestamp:** Extract when current stage started (e.g., "2026-03-16 16:25:32")
+3. **Calculate elapsed time:** `(now - start_time) / 3600` = hours elapsed
+4. **Decision matrix:**
+   - <90 min elapsed: cycle is WORKING, leave it alone
+   - 90-120 min elapsed: check for progress (network connections, file writes)
+   - >120 min (2h) elapsed: cycle is HUNG, kill it
+
+**Mar 18 Failure:** Claimed cycle "started 16:25" meant 92 min in, but it was actually **Mar 16** 16:25 = **37 HOURS** hung
+- I misread "2026-03-16" as "today at 16:25" when current time was "2026-03-18 05:41"
+- Rob: "do you know what the time and day is!!"
+- **FIX:** Always compare FULL timestamps (YYYY-MM-DD HH:MM) not just HH:MM
+- **FIX:** Use `date -d '2026-03-16 16:25:32' +%s` and `date +%s` to get epoch seconds, then subtract
 
 **Cycle 122 proof:** 12:03:19 → 13:08:10 (64min 51sec), completed successfully with 0 errors after applying batch limit fix
+
+**Heartbeat cron updated Mar 18 05:47:** Now parses log timestamps and calculates hours elapsed, kills cycles hung >2h
 
 ## ⛔ Agent File Updates (Mar 16 2026)
 - **Your BOOTSTRAP.md and MEMORY.md are symlinked from the repo**
