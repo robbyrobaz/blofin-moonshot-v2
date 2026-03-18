@@ -2,7 +2,16 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/MEMORY.md`.
 > **UPDATE THIS FILE** when you learn something new. It persists across sessions.
-> Last updated: 2026-03-17 05:39 MST
+> Last updated: 2026-03-18 05:31 MST
+
+## Systemd Timer Reliability (Mar 18 2026)
+- **Timer "Trigger: n/a" bug recurs even after fixing OnCalendar syntax**
+- Symptom: Timer shows "Active: active (running)" but "Trigger: n/a" → no future fires
+- Root cause: systemd timer state gets stuck, config looks correct but trigger isn't scheduled
+- **Fix:** `systemctl --user daemon-reload && systemctl --user restart <timer>` restores trigger
+- Happened Mar 17 20:35 (fixed OnCalendar syntax) → worked for 3 cycles → stuck again Mar 18 05:31
+- **Lesson:** ALWAYS check "Trigger:" line after each cycle completion — add to heartbeat routine
+- **Permanent fix:** May need `systemctl --user daemon-reload` in heartbeat if stuck repeatedly
 
 ## Systemd Service Debugging (Mar 17 2026)
 - **Type=oneshot services need explicit `TimeoutStopSec`** — default is 90sec
