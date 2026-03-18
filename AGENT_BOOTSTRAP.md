@@ -2,43 +2,52 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 20:03 MST (Heartbeat Scan)
+> Last updated: 2026-03-17 20:36 MST (Heartbeat Scan)
 
-## 🚨 HEARTBEAT STATUS (Mar 17 20:03) — CRITICAL: LONG PIPELINE DEAD
+## 🚨 HEARTBEAT STATUS (Mar 17 20:36) — CYCLE HEALTHY, TIMER NOW FIXED ✅
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
-- 🔄 **Moonshot Cycle:** Started 18:03, running 2h (backtest stage, 20 models processing) — NORMAL RUNTIME
+- 🔄 **Moonshot Cycle 140:** Running 2h 32min (started 18:03), backtest stage (fold processing), CPU 1110% (11 cores) — **WORKING ✅**
+- ✅ **Timer FIXED:** Restart at 00:05 MST (3h 29min), systemd now shows proper trigger ✅
 - ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=0.68%) — HEALTHY ✅
 - 🚨 **LONG PIPELINE BROKEN:** NO champion + ALL 30 LONG FT models have 0 trades — models pass backtest but never generate signals
 - ✅ **New listing champion:** 0 trades (waiting for next ≤7d coin)
-- 📊 **FT backlog:** 423 models total (393 SHORT healthy, 30 LONG dead)
-- 📊 **Backtest queue:** 32 models (15 SHORT, 17 LONG)
-- 📊 **Retired:** 1,792 models (709 SHORT, 1,083 LONG — LONG has 53% retirement vs 35% SHORT)
+- 📊 **FT backlog:** 427 models total (397 SHORT healthy, 30 LONG dead)
+- 📊 **Backtest queue:** 20 models
+- 📊 **Retired:** 1,792+ models
 - 📊 **Open positions:** 884
-- ✅ **Git status:** moonshot clean (catboost logs safe to ignore), blofin-stack CLEAN (15 commits pushed ✅)
-- ✅ **Kanban:** 0 Planned, 1 In Progress (NQ vwap_fade), 0 Failed
+- ⚠️ **Git status:** moonshot clean (catboost logs safe), blofin-stack 15 commits unpushed (git push hung, manual push needed)
+- ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed
 - ✅ **Critical alerts:** None from monitor
-- 🔧 **Historical backfill:** PID 658749 running (started 19:05, 92 symbols done, 2 workers)
+- 🔧 **Historical backfill:** PID 658749 running (started 19:05, ~92 symbols done)
+- 🚨 **TIMER BUG FIXED (Mar 17 20:35):** `OnCalendar=*-*-* 00/4:05:00` syntax broken in systemd 256+, changed to explicit hours `00,04,08,12,16,20:05:00`, restarted timer — now active ✅
 - 🚨 **INVESTIGATION NEEDED:** Why do LONG models pass BT gates but never fire in FT?
 
-## 🚨 TIMER MISCONFIGURATION (Mar 17 19:03) — DUAL OnCalendar BREAKS SYSTEMD
-- **Root cause:** Timer has TWO OnCalendar directives (hourly + *-*-* *:05:00)
-- **Systemd behavior:** Multiple OnCalendar = systemd disables timer (shows "Trigger: n/a")
-- **Result:** No automatic cycles fire — Cycle 140 only started because timer was restarted at 18:03
-- **Fix needed:** Remove `OnCalendar=hourly`, keep only `OnCalendar=*-*-* 00/4:05:00` (4-hour schedule)
-- **Current state:** Cycle 140 running manually, will NOT restart when it finishes
-- **Timer file:** `/home/rob/.config/systemd/user/moonshot-v2.timer`
-- **Previous issue (RESOLVED):** Cycles take 195+ min, hourly timer killed them — now timer just doesn't fire at all
-
-## 🚀 PERFORMANCE FIX (Mar 17 05:47) — HOURLY CYCLES + DYNAMIC BACKTESTING
-- **Cycle interval changed:** 4h → **1h** (hourly at :05)
-- **Backtest batch now DYNAMIC** based on CPU load (commit d71f08c, 707e591)
-  - CPU < 70%: batch 100 models (max throughput)
-  - CPU ≥ 70%: batch 10 models (throttle to prevent overload)
-  - Uses 1-min load average / core count (psutil)
-- **Result:** Queue drains 75/hour when CPU idle (was growing +5/4h)
-- **CRITICAL:** Timer schedule was NOT updated until Mar 17 18:03 (ca4700a)
+## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
+- **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
+- **Symptom:** Timer shows "Active: active (running)" but "Trigger: n/a" → no future cycles scheduled
+- **Fix:** Changed from `OnCalendar=*-*-* 00/4:05:00` to `OnCalendar=00,04,08,12,16,20:05:00`, restarted timer
+- **Verification:** `systemctl --user status moonshot-v2.timer` now shows "Trigger: Wed 2026-03-18 00:05:00 MST"
+- **Result:** Cycle 140 will complete, timer will fire at 00:05 for Cycle 141 ✅
+- **Lesson:** Always check "Trigger:" line after timer changes — "n/a" means disabled even if "active (running)"
 
 ## Session Summary (Mar 17 2026)
+
+**Heartbeat 20:36 (Mar 17):**
+- ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
+- 🔄 Moonshot Cycle 140: IN PROGRESS (started 18:03, 2h 32min runtime, backtest stage, CPU 1110%) — **NORMAL ✅**
+- 🚨 **TIMER FIXED:** systemd OnCalendar syntax bug (00/4 → explicit hours), restarted timer, next cycle 00:05 ✅
+- ✅ SHORT champion: de44f72dbb01 | FT: 388 trades, PF=2.22, PnL=68.37% — **ACTIVE**
+- 🚨 **LONG champion:** NONE (30 LONG FT models all have 0 trades — models pass BT but never fire)
+- ✅ New listing champion: active, 0 FT trades (waiting for next ≤7d coin)
+- 📊 FT backlog: 427 models (397 SHORT, 30 LONG dead)
+- 📊 BT backlog: 20 models (draining)
+- 🔧 Historical backfill: PID 658749 running (started 19:05, ~92 symbols)
+- 🔧 Builders running: 0
+- ✅ No critical alerts from monitor
+- ✅ Kanban: 0 Planned, 0 In Progress, 0 Failed
+- ⚠️ Git: moonshot clean (catboost logs only), blofin 15 unpushed commits (git push hung, killed)
+- 📊 Blofin v1 Top 5 FT: reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
+- 🎯 **Next action:** Let Cycle 140 complete naturally, verify timer fires at 00:05 for Cycle 141
 
 **Heartbeat 17:33 (Mar 17):**
 - ✅ All services healthy (Blofin stack, Moonshot dashboard, kanban)
@@ -120,14 +129,14 @@
   - **Workaround: Rule-based `new_listing` strategy active (484 LONG positions open)**
 - **New Listing:** new_listing (rule-based), BT_PF=7.53, FT_trades=0 — waiting for next ≤7 day coin
 
-### Tournament Numbers (Latest cycle: 139 in progress)
+### Tournament Numbers (Latest cycle: 140 in progress)
 | Stage | Count |
 |-------|-------|
 | Champion | 2 (short/new_listing) |
-| Forward Test | 392 |
-| Backtest | 108 |
-| Retired | 1,432+ |
-| **Total** | **2,000+** |
+| Forward Test | 427 |
+| Backtest | 20 |
+| Retired | 1,792+ |
+| **Total** | **2,241+** |
 
 ### Coins & Positions
 - 471 total symbols tracked
@@ -144,20 +153,20 @@
 - FK constraint required dummy model entry in tournament_models
 
 ### Services (All ACTIVE)
-- `moonshot-v2.timer` — 4h cycle (OnCalendar=*-*-* 00/4:05:00)
+- `moonshot-v2.timer` — 4h cycle (OnCalendar=00,04,08,12,16,20:05:00) **FIXED ✅**
 - `moonshot-v2-social.timer` — 1h social signals (active)
 - `moonshot-v2-dashboard.service` — HTTP 200 on port 8893
 - Dashboard: http://127.0.0.1:8893/
-- **Backfill:** Historical data backfill IN PROGRESS (PID 406340, started 16:38)
+- **Backfill:** Historical data backfill IN PROGRESS (PID 658749, started 19:05)
 
 ### Cycle Performance — SYSTEMD TIMEOUT FIX HOLDING ✅
 
-**Cycle 139: IN PROGRESS (started 13:51)**
-- Runtime so far: 2h 10min (130min)
-- Status: Actively backtesting (last log 16:00 — model 37603ff3e4fd)
-- **Watchdog fix proven:** Survived past old 90min threshold, still running at 130min ✅
-- FT queue: 392 (stable)
-- BT queue: 108 (draining)
+**Cycle 140: IN PROGRESS (started 18:03)**
+- Runtime so far: 2h 32min (CPU 1110%, backtest stage)
+- Status: Actively backtesting fold processing (normal progress)
+- **Timer fix:** Syntax bug fixed at 20:35, next cycle 00:05 ✅
+- FT queue: 427
+- BT queue: 20
 
 **Cycle 135: COMPLETED (08:26)**
 - Started: 08:05 → Finished: 08:26 (20min 37sec)
@@ -177,7 +186,8 @@
 1. Batch limit (20/cycle) prevents backtest infinite loops — commit 4cd2f59
 2. Two-tier FT retirement (PF<0.9 at 50 trades) — commit c7c71b3
 3. **TimeoutStopSec=120 in moonshot-v2.service — commit TBD (deployed Mar 17 07:36)**
-4. **Watchdog threshold 90min → 180min — commit 64584d1 (deployed Mar 17 14:38)**
+4. **Watchdog threshold 90min → 180min → 240min — commit 64584d1, 88ff10d (deployed Mar 17 14:38, 17:33)**
+5. **Timer OnCalendar syntax bug fixed — commit TBD (deployed Mar 17 20:35)**
 
 **Lesson:** Cycles take 60+ min (not 15-20). Extended data + backtest + FT scoring = slow but working. NEVER kill to investigate.
 
@@ -223,10 +233,4 @@
 - ⛔ Data migration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
 - ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
 - ⛔ **NEVER kill a running process to "investigate" — that's backwards**
-gration: COPY-VERIFY-DELETE only (107GB loss Mar 12)
-- ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
-- ⛔ **NEVER kill a running process to "investigate" — that's backwards**
-e" — that's backwards**
-NVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
-- ⛔ **NEVER kill a running process to "investigate" — that's backwards**
-e" — that's backwards**
+- ⛔ **ALWAYS check "Trigger:" line in systemd timer status — "n/a" means timer is disabled**
