@@ -2,22 +2,22 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 21:32 MST (Heartbeat Scan)
+> Last updated: 2026-03-17 22:37 MST (Heartbeat Scan)
 
-## 🚨 HEARTBEAT STATUS (Mar 17 22:03) — CYCLE 142 IN PROGRESS, ALL HEALTHY ✅
+## 🚨 HEARTBEAT STATUS (Mar 17 22:37) — CYCLE 142 COMPLETING, ALL HEALTHY ✅
 - ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
-- 🔄 **Moonshot Cycle 142:** Running 44min (started 21:18), label loading stage — **NORMAL ✅**
-- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (2h 1min), "Active: active (waiting)" ✅
-- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=68.37%) — HEALTHY ✅
+- 🔄 **Moonshot Cycle 142:** Running 78min (started 21:18), FT scoring completed 22:31 — **COMPLETING ✅**
+- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (1h 28min), "Active: active (waiting)" ✅
+- ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22) — HEALTHY ✅
 - 🚨 **LONG champion:** NONE (30 LONG FT models, 0 trades — models pass BT but never fire)
-- 📊 **FT backlog:** 436 models total (406 SHORT, 30 LONG dead)
-- 📊 **Backtest queue:** 15 models (draining)
+- 📊 **FT backlog:** 440 models total (410 SHORT, 30 LONG dead)
+- 📊 **Backtest queue:** 0 models (drained)
 - 📊 **Open positions:** 871 (435 LONG, 436 SHORT)
-- ⚠️ **Git status:** moonshot clean (catboost logs only), blofin-stack 18 commits unpushed + 1 modified (today's parquet)
-- ✅ **Kanban:** 0 Planned crypto cards, 0 In Progress crypto, 0 Failed crypto (1 NQ card active)
+- ⚠️ **Git status:** moonshot clean (catboost logs only), blofin-stack 18 commits unpushed + 1 modified (git push HUNG again)
+- ✅ **Kanban:** 0 Planned crypto cards, 0 In Progress crypto, 0 Failed crypto
 - ✅ **Critical alerts:** None from monitor
-- 🔧 **Historical backfill:** PID 847140 running (41min, 2 workers, parquet writes active)
-- 📊 **Blofin v1 Top 5 FT:** rsi_divergence+CVX PF≈4.00 (5), reversal+NEIRO PF≈4.00 (5), candle_momentum_burst+BANANA PF≈3.00 (4), reversal+NAORIS PF≈3.00 (4), reversal+BLUR PF≈3.00 (4)
+- 🔧 **Historical backfill:** COMPLETE (no processes running)
+- 📊 **Blofin v1 Top 5 BT:** macd_divergence+DOT PF≈3.42 (212), rsi_divergence+ETH PF≈3.40 (291), macd_divergence+LINK PF≈3.39 (303), vwap_reversion+DOGE PF≈3.38 (233), ema_crossover+SOL PF≈3.37 (440)
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
