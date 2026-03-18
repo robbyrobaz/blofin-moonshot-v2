@@ -122,8 +122,8 @@
 - Paper trading active (35K+ paper trades, BT complete)
 - Services: `blofin-stack-ingestor`, `blofin-stack-paper`, `blofin-dashboard` — ALL ACTIVE
 - Dashboard: http://127.0.0.1:8892 (HTTP 200)
-- **FT status:** Very early (≤3 trades per pair), top 5 pending DB query completion
-- Not ready for promotion (need ≥100 trades + PF≥1.35)
+- **Top 5 FT performers (early):** reversal/DOT (PF 5.06), reversal/LINK (PF 3.99), bb_squeeze/ADA (PF 2.61), bb_squeeze/BTC (PF 2.34)
+- Not ready for promotion (only 3 trades each, need ≥100 trades + PF≥1.35)
 
 ### Ranking & Promotion
 - Ranking: `bt_pnl_pct` (compounded PnL %)
