@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-18 09:02 MST (Heartbeat check — all systems operational)
+> Last updated: 2026-03-18 10:32 MST (Heartbeat — all systems operational)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -49,33 +49,37 @@
 4. **I CAN edit crons** — never deflect with "I can't"
 5. **Spawn subagents for deep audits** — code review + systemd forensics
 
-**Next cycle:** 08:05 MST with fixed service definition (zombies will die in 10min max)
+**Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 18 10:08)
+## Current Status (Mar 18 10:32)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
-- 🚨 blofin-stack-paper.service (CRASH-LOOPING — DuckDB schema bug, builder dispatched c_e61b084ae690b_19d01ed4062)
+- ✅ blofin-stack-paper.service (active)
 - ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (next fire: 12:05 MST, 1h 56min left)
+- ✅ moonshot-v2.timer (next fire: 12:05 MST)
 
 **Tournament:**
-- Champions: de44f72dbb01 (short, 388 FT trades, PF 2.22), new_listing (0 trades)
+- Champions: de44f72dbb01 (short, 388 FT trades, PF 2.22, PnL 0.68%), new_listing (0 trades)
 - Open positions: 932
 - FT backlog: 453
 - Stage counts: Champion 2, Forward Test 453, Backtest 3, Retired 1,866
-- No cycle running (next: 12:05 MST)
+- Cycle running: PID 2230243, started 10:30 (2min old, WORKING)
 
 **Blofin v1:**
-- 🚨 Paper engine crash: restart counter 3053, bug is `price` column should be `last_price` in tick adapter
-- Builder fixing: c_e61b084ae690b_19d01ed4062 (dispatched 10:08)
+- ✅ All services active
 - Top 5 FT performers: reversal/DOT-USDT (PF 5.06, 3 trades), reversal/LINK-USDT (PF 3.99, 3 trades), bb_squeeze/ADA-USDT (PF 2.61, 3 trades), bb_squeeze/BTC-USDT (PF 2.34, 3 trades)
 - No strategies ready for promotion yet (need 100+ trades, PF≥1.35)
 
 **Git:**
 - moonshot: clean, 0 unpushed commits
-- blofin-stack: clean, 21 unpushed commits (<25 threshold, OK)
+- blofin-stack: clean, 22 unpushed commits (<25 threshold, OK)
+
+**Kanban:**
+- 0 Planned crypto cards
+- 0 In Progress crypto cards
+- 0 Failed crypto cards
 
 ## Moonshot v2 — Tournament Status
 
@@ -98,7 +102,7 @@
 - LONG (relaxed): PF ≥ 0.7, precision ≥ 0.22, bootstrap CI ≥ 0.6
 
 ### Services
-- `moonshot-v2.timer` — 4h cycle (next: 08:05 MST)
+- `moonshot-v2.timer` — 4h cycle (next: 12:05 MST)
 - `moonshot-v2-social.timer` — 1h social signals
 - `moonshot-v2-dashboard.service` — HTTP 200 on port 8893
 - Dashboard: http://127.0.0.1:8893/
@@ -106,7 +110,7 @@
 ### Cycle Performance
 - Last successful cycle: 143 (Mar 18 01:15, 71min runtime)
 - Last killed cycle: 126 (Mar 16 16:25, hung 37h, killed Mar 18 05:43)
-- Next cycle: scheduled 08:05 MST (first with zombie fix)
+- Current cycle: 10:30 start (2min old, WORKING)
 
 ## Blofin v1 Stack
 
@@ -114,7 +118,7 @@
 - Paper trading active (35K+ paper trades, BT complete)
 - Services: `blofin-stack-ingestor`, `blofin-stack-paper`, `blofin-dashboard` — ALL ACTIVE
 - Dashboard: http://127.0.0.1:8892 (HTTP 200)
-- **Top 5 FT performers (early):** reversal/LINK (BT_PF 3.35), bb_squeeze/BTC (BT_PF 2.65), bb_squeeze/ADA (BT_PF 2.63), rsi_divergence/DOT (BT_PF 1.76), reversal/DOT (BT_PF 1.65)
+- **Top 5 FT performers (early):** reversal/DOT (FT_PF 5.06), reversal/LINK (FT_PF 3.99), bb_squeeze/ADA (FT_PF 2.61), bb_squeeze/BTC (FT_PF 2.34)
 - Not ready for promotion (only 3 FT trades each, need ≥100 trades + BT_PF≥1.35)
 
 ### Ranking & Promotion
@@ -144,4 +148,3 @@
 - ⛔ INVESTIGATE BEFORE KILLING — slow ≠ broken (cycles take 60+ min)
 - ⛔ **CHECK CURRENT TIME FIRST** — parse full timestamps (YYYY-MM-DD HH:MM), not just HH:MM
 - ⛔ **TimeoutStopSec should be SHORT** — 30-600s max, NEVER infinity (how fast zombies die)
-es die)
