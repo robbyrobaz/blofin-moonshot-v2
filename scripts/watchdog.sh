@@ -5,8 +5,8 @@ set -e
 
 DB_PATH="/home/rob/.openclaw/workspace/blofin-moonshot-v2/data/moonshot_v2.db"
 LOCK_FILE="/home/rob/.openclaw/workspace/blofin-moonshot-v2/data/moonshot_v2.cycle.lock"
-MAX_CYCLE_MINUTES=180  # Increased from 90 — cycles with extended data take 105-120min
-MAX_BACKTEST_MINUTES=120  # Increased from 60 — large backtest batches take longer
+MAX_CYCLE_MINUTES=240  # Increased from 180 — cycles now take 195+ min with large queues
+MAX_BACKTEST_MINUTES=150  # Increased from 120 — large backtest batches take longer
 NTFY_TOPIC="jarvis-alerts"
 
 # Check for hung run_cycle.py
