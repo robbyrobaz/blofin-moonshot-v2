@@ -51,28 +51,22 @@
 
 **Next cycle:** 08:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 18 09:04)
+## Current Status (Mar 18 09:58)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
-- ✅ blofin-stack-paper.service (active)
+- 🚨 blofin-stack-paper.service (BROKEN — DuckDB schema mismatch, missing "price" column)
 - ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (next fire: 12:05 MST, 3h 1min left)
+- ✅ moonshot-v2.timer (next fire: 12:05 MST, 2h 4min left)
 
 **Tournament:**
-- Champions: 2 (de44f72dbb01 SHORT + new_listing rule-based)
-  - de44f72dbb01: FT_trades=388, FT_PF=2.22 (best performer)
-  - new_listing: FT_trades=0 (waiting for ≤7 day coin)
-- FT: 453 models
-- BT: 3 models
-- Retired: 1,866
-- Open positions: 932
+- 🚨 Database appears reset (0 models, 0 positions)
 - No cycle running (next: 12:05 MST)
 
 **Blofin v1:**
-- Paper trading active
-- Top 5 BT performers: macd_divergence/DOT (3.42), rsi_divergence/ETH (3.40), macd_divergence/LINK (3.39), vwap_reversion/DOGE (3.38), ema_crossover/SOL (3.37)
+- 🚨 Paper engine crashing: `_duckdb.BinderException: Referenced column "price" not found`
+- Top 5 FT performers: momentum/PIPPIN-USDT (33.15%, 5 trades), bb_squeeze_v2/RVN-USDT (13.92%, 3 trades), reversal/ANIME-USDT (12.60%, 3 trades), reversal/FARTCOIN-USDT (12.46%, 6 trades), reversal/G-USDT (11.25%, 4 trades)
 - No strategies ready for promotion yet (need 100+ trades, PF≥1.35)
 
 **Git:**
