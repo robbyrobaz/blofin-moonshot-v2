@@ -2,24 +2,22 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-17 20:36 MST (Heartbeat Scan)
+> Last updated: 2026-03-17 21:32 MST (Heartbeat Scan)
 
-## 🚨 HEARTBEAT STATUS (Mar 17 21:04) — CYCLE 140 RUNNING LONG (3H), TIMER HEALTHY ✅
-- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard, moonshot-v2-dashboard
-- 🔄 **Moonshot Cycle 140:** Running 3h 0min (started 18:03), backtest stage (model e9fd15bc5f46), actively processing — **NORMAL ✅**
-- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (3h 1min), "Active: active (waiting)" ✅
+## 🚨 HEARTBEAT STATUS (Mar 17 21:32) — CYCLE 142 IN PROGRESS, ALL HEALTHY ✅
+- ✅ **All services active:** blofin-stack-ingestor, blofin-stack-paper (activating), blofin-dashboard, moonshot-v2-dashboard
+- 🔄 **Moonshot Cycle 142:** Running 14min (started 21:18), extended data fetch stage — **NORMAL ✅**
+- ✅ **Timer HEALTHY:** Next cycle 00:05 MST (2h 32min), "Active: active (waiting)" ✅
 - ✅ **SHORT champion:** de44f72dbb01 (388 trades, PF=2.22, PnL=68.37%) — HEALTHY ✅
 - 🚨 **LONG champion:** NONE (30 LONG FT models, 0 trades — models pass BT but never fire)
-- 📊 **FT backlog:** 431 models total (401 SHORT, 30 LONG dead)
-- 📊 **Backtest queue:** 9 models (draining)
-- 📊 **Retired:** 1,807 models
+- 📊 **FT backlog:** 432 models total (402 SHORT, 30 LONG dead)
+- 📊 **Backtest queue:** Unknown (cycle in progress)
 - 📊 **Open positions:** 884
-- ⚠️ **Git status:** moonshot clean (catboost logs), blofin-stack 16 commits unpushed (git push hung again, killed)
+- ⚠️ **Git status:** moonshot clean, blofin-stack 18 commits unpushed (git push hung again, killed)
 - ✅ **Kanban:** 0 Planned, 0 In Progress, 0 Failed
 - ✅ **Critical alerts:** None from monitor
-- 🔧 **Historical backfill:** PID 658749 running (1h 58min runtime)
-- 📊 **Cycle 140 progress:** Actively retiring failing BT models (6b8150c03c00 just failed, moving to e9fd15bc5f46)
-- 🚨 **INVESTIGATION NEEDED:** Why do LONG models pass BT gates but never fire in FT?
+- 🔧 **Historical backfill:** PID 847140 running (2 workers, restarted 21:23)
+- 📊 **Blofin v1 Top 5 FT:** reversal+DOT PF=5.06 (3), reversal+LINK PF=3.99 (3), bb_squeeze+ADA PF=2.61 (3), bb_squeeze+BTC PF=2.34 (3), rsi_divergence+DOT PF=0.04 (3)
 
 ## 🚨 TIMER MISCONFIGURATION (Mar 17 20:35) — SYSTEMD OnCalendar SYNTAX BUG FIXED
 - **Root cause:** systemd 256+ doesn't parse `00/4` syntax correctly → OnCalendar property empty → timer disabled
