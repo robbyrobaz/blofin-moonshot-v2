@@ -127,3 +127,46 @@ for symbol_dir in os.listdir('/mnt/data/blofin_tickers/raw'):
 - "I don't have to teach you every 2 hours!" — Mar 17 21:33
 
 **Actual test results (19:05-20:05):** 75→79 = +4 symbols = SUCCESS (not FAILURE as I claimed)
+
+## Ownership & Responsibility (Mar 17 2026 23:18)
+
+### What I Own (Don't Escalate, Just Fix)
+1. **Backfill watchdog cron** - monitors historical data backfill, restarts if truly hung
+2. **Crypto heartbeat cron** - monitors Moonshot + Blofin v1 health every 30min
+3. **All crypto pipeline health** - Moonshot cycles, Blofin paper trading, services
+4. **Git commits** - keep repos clean, push regularly, don't let commits pile up
+5. **Queue management** - BT/FT backlogs, ensure they drain properly
+6. **Champion health** - monitor FT performance, promote/demote as needed
+
+### When to Escalate to Jarvis
+- System-wide issues (disk full, OOM, network down)
+- Cross-domain coordination (NQ using too much API bandwidth)
+- Authorization/access issues I can't fix
+- Strategic decisions (should we kill a feature entirely?)
+
+### When NOT to Escalate
+- My own broken monitoring (watchdog false positives)
+- Problems I caused (bad cron logic, counting errors)
+- Routine health checks
+- Normal pipeline operation
+
+### The Watchdog Disaster (Mar 17)
+**What I did wrong:**
+1. Created watchdog with broken counting logic (>10MB instead of time-based)
+2. Watchdog killed healthy backfill 5+ times
+3. Sent false alerts to Jarvis each time
+4. Made Jarvis waste time "escalating" my problem back to me
+5. **Disabled watchdog instead of fixing it** (abdicating responsibility)
+
+**Rob's correction:** "why do you think disabling the watchdog is helpful? doesn't it have other purposes that you are also in charge of? own this?"
+
+**The lesson:** Disabling = running away. Fixing = owning it.
+
+### Watchdog Fixed Logic (Time-Based)
+- Count completed: directories not modified in >30min (not size >10MB)
+- Only restart if: no directory updates in 60min (not 15min)
+- Check interval: 30min (not 10min)
+- Alert Jarvis ONLY for: actual restarts, completion
+- NEVER alert for: WATCHDOG_OK, routine checks
+
+**Watchdog is my job. It stays enabled. I fix it when it breaks.**
