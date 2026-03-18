@@ -10,14 +10,14 @@
 - **Why 25?** All data is committed locally + backed up. Push failures are NON-URGENT until Rob fixes auth.
 - **Git hygiene routine:** Keep running (commit regularly), don't alert on push failures until auth fixed.
 
-## 🚨 CRITICAL INCIDENT (Mar 18 05:43) — 37-HOUR HUNG CYCLE + INGESTOR KILLED ✅
+## 🚨 CRITICAL INCIDENT (Mar 18 06:32) — SOCIAL TIMER HUNG 38 HOURS ✅
 
 **What happened:**
-- 🚨 **Moonshot Cycle 126:** HUNG for 37 HOURS (started Mar 16 16:25, killed Mar 18 05:43)
-  - Last log: "fetch_all_extended: starting for 470 symbols" at Mar 16 16:25:32
-  - Process alive (PID 1397390, 599% CPU) but doing NOTHING (0 network connections)
-  - Rob: "do you know what the time and day is!!" — I misread Mar 16 as "today"
-  - **ROOT CAUSE:** My timestamp parsing was BROKEN — compared HH:MM not YYYY-MM-DD HH:MM
+- 🚨 **Social collection (PID 1622033):** HUNG for 38 HOURS (started Mar 16 16:25, killed Mar 18 06:32)
+  - Last log: "fetch_all_extended: starting for 470 symbols" at Mar 16 16:25:32 (same as main cycle)
+  - Process stuck on Reddit rate limit loop (r/SatoshiStreetBets), never completed
+  - **This is the SAME timestamp as yesterday's hung main cycle** — both stuck at Mar 16 16:25
+  - **ROOT CAUSE:** Social timer (1h) shares log file with main cycle (4h), both got stuck on extended data fetch
 - 🚨 **Parquet Ingestor:** HUNG for 8h 18m (started Mar 17 21:25, killed Mar 18 05:44)
   - PID 849143, 100% CPU sustained, 1 CLOSE_WAIT socket (dead connection)
   - File NOT growing (negative growth = compaction, not writing)

@@ -162,6 +162,8 @@ def collect_reddit(db, top_symbols: list[str] | None = None) -> int:
     count = 0
     pending_rows = []
     headers = {"User-Agent": "moonshot-v2/1.0"}
+    rate_limit_strikes = 0
+    MAX_RATE_LIMIT_STRIKES = 3
 
     for subreddit in REDDIT_SUBREDDITS:
         for symbol in top_symbols[:50]:
@@ -174,7 +176,12 @@ def collect_reddit(db, top_symbols: list[str] | None = None) -> int:
                     timeout=10,
                 )
                 if resp.status_code == 429:
-                    log.warning("collect_reddit: rate limited on r/%s, pausing", subreddit)
+                    rate_limit_strikes += 1
+                    log.warning("collect_reddit: rate limited on r/%s (%d/%d strikes), pausing",
+                                subreddit, rate_limit_strikes, MAX_RATE_LIMIT_STRIKES)
+                    if rate_limit_strikes >= MAX_RATE_LIMIT_STRIKES:
+                        log.error("collect_reddit: max rate limit strikes reached, aborting")
+                        break
                     time.sleep(5)
                     continue
                 if resp.status_code != 200:
@@ -195,6 +202,10 @@ def collect_reddit(db, top_symbols: list[str] | None = None) -> int:
 
             except Exception as e:
                 log.warning("collect_reddit: r/%s %s error: %s", subreddit, symbol, e)
+
+        if rate_limit_strikes >= MAX_RATE_LIMIT_STRIKES:
+            log.warning("collect_reddit: skipping remaining subreddits due to rate limits")
+            break
 
     if pending_rows:
         db.executemany(

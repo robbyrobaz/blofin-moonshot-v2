@@ -1,8 +1,18 @@
 """Moonshot v2 — Extended market data: funding, OI, mark prices, tickers."""
 
 import time
+import signal
 import requests
 from config import BLOFIN_BASE_URL, BLOFIN_RATE_LIMIT_RPS, log
+
+
+class TimeoutError(Exception):
+    """Raised when operation exceeds timeout."""
+    pass
+
+
+def _timeout_handler(signum, frame):
+    raise TimeoutError("Operation timed out")
 
 
 def _rate_sleep(delay: float, index: int, total: int):
@@ -179,10 +189,25 @@ def fetch_tickers(db) -> int:
 
 
 def fetch_all_extended(db, symbols: list[str]):
-    """Master function: fetch all extended market data for a cycle."""
-    log.info("fetch_all_extended: starting for %d symbols", len(symbols))
-    fetch_funding_rates(db, symbols)
-    fetch_open_interest(db, symbols)
-    fetch_mark_prices(db, symbols)
-    fetch_tickers(db)
-    log.info("fetch_all_extended: complete")
+    """Master function: fetch all extended market data for a cycle.
+
+    Enforces 15min overall timeout to prevent deadlocks.
+    """
+    TIMEOUT_SECONDS = 900  # 15 minutes
+    log.info("fetch_all_extended: starting for %d symbols (timeout=%ds)", len(symbols), TIMEOUT_SECONDS)
+
+    # Set alarm signal for timeout
+    signal.signal(signal.SIGALRM, _timeout_handler)
+    signal.alarm(TIMEOUT_SECONDS)
+
+    try:
+        fetch_funding_rates(db, symbols)
+        fetch_open_interest(db, symbols)
+        fetch_mark_prices(db, symbols)
+        fetch_tickers(db)
+        log.info("fetch_all_extended: complete")
+    except TimeoutError:
+        log.error("fetch_all_extended: TIMEOUT after %ds — aborting", TIMEOUT_SECONDS)
+        raise
+    finally:
+        signal.alarm(0)  # Cancel alarm

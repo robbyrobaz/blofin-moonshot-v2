@@ -79,6 +79,7 @@ def backfill_candles(db, symbol: str, target_years: int = BACKFILL_TARGET_YEARS)
     delay = 1.0 / BLOFIN_RATE_LIMIT_RPS
     target_ms = int(time.time() * 1000) - (target_years * 365.25 * 24 * 3600 * 1000)
     total = 0
+    MAX_ITERATIONS = 1000  # ~200k candles max (200 per page × 1000 pages)
 
     # Start from the oldest candle we already have, or from now
     row = db.execute(
@@ -86,7 +87,9 @@ def backfill_candles(db, symbol: str, target_years: int = BACKFILL_TARGET_YEARS)
     ).fetchone()
     before = row["min_ts"] if row and row["min_ts"] else None
 
-    while True:
+    iteration = 0
+    while iteration < MAX_ITERATIONS:
+        iteration += 1
         params = {"instId": symbol, "bar": CANDLE_INTERVAL, "limit": "200"}
         if before is not None:
             params["before"] = str(before)
@@ -122,6 +125,9 @@ def backfill_candles(db, symbol: str, target_years: int = BACKFILL_TARGET_YEARS)
             break
 
         time.sleep(delay)
+
+    if iteration >= MAX_ITERATIONS:
+        log.warning("backfill_candles: %s hit max iterations (%d), stopping", symbol, MAX_ITERATIONS)
 
     # Update oldest_candle_ts in coins table
     if total > 0:
