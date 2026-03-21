@@ -1,0 +1,27 @@
+{
+  "model_type": "lightgbm",
+  "n_estimators": 200,
+  "learning_rate": 0.01,
+  "max_depth": 8,
+  "num_leaves": 63,
+  "neg_class_weight": 5,
+  "confidence_threshold": 0.6,
+  "direction": "short",
+  "feature_set": [
+    "price_vs_52w_high",
+    "price_vs_52w_low",
+    "btc_vol_percentile",
+    "btc_30d_return",
+    "fear_greed_7d_change",
+    "fear_greed_score",
+    "is_coingecko_trending",
+    "trending_rank",
+    "github_commits_7d",
+    "github_commit_spike",
+    "news_mentions_7d_avg",
+    "news_velocity_ratio",
+    "atr_percentile",
+    "momentum_8w",
+    "market_breadth"
+  ]
+}

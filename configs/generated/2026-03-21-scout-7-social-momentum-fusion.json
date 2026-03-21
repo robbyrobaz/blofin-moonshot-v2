@@ -1,0 +1,27 @@
+{
+  "model_type": "catboost",
+  "n_estimators": 200,
+  "learning_rate": 0.05,
+  "max_depth": 6,
+  "num_leaves": 63,
+  "neg_class_weight": 5,
+  "confidence_threshold": 0.5,
+  "direction": "short",
+  "feature_set": [
+    "fear_greed_score",
+    "fear_greed_7d_change",
+    "is_coingecko_trending",
+    "trending_rank",
+    "news_velocity_ratio",
+    "reddit_velocity_ratio",
+    "github_commit_spike",
+    "momentum_4w",
+    "momentum_8w",
+    "higher_highs",
+    "consec_up_bars",
+    "price_vs_52w_high",
+    "bb_position",
+    "btc_30d_return",
+    "market_breadth"
+  ]
+}

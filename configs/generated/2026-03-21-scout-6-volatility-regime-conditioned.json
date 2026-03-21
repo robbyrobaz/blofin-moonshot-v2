@@ -1,0 +1,25 @@
+{
+  "model_type": "xgboost",
+  "n_estimators": 200,
+  "learning_rate": 0.05,
+  "max_depth": 8,
+  "num_leaves": 63,
+  "neg_class_weight": 8,
+  "confidence_threshold": 0.6,
+  "direction": "long",
+  "feature_set": [
+    "atr_percentile",
+    "btc_vol_percentile",
+    "momentum_4w",
+    "volume_spike",
+    "funding_rate_extreme",
+    "realized_vol_ratio",
+    "atr_compression",
+    "high_low_range_pct",
+    "mark_index_spread",
+    "oi_price_divergence",
+    "bb_squeeze_pct",
+    "consec_down_bars",
+    "price_change_24h_pct"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "model_type": "xgboost",
+  "n_estimators": 200,
+  "learning_rate": 0.05,
+  "max_depth": 6,
+  "num_leaves": 63,
+  "neg_class_weight": 5,
+  "confidence_threshold": 0.5,
+  "direction": "short",
+  "feature_set": [
+    "price_change_24h_pct",
+    "vol_24h_vs_7d_avg",
+    "funding_rate_current",
+    "volume_spike",
+    "atr_compression",
+    "price_vs_24h_high",
+    "price_vs_24h_low",
+    "mark_index_spread",
+    "funding_rate_extreme",
+    "oi_change_24h",
+    "bb_squeeze_pct",
+    "high_low_range_pct"
+  ]
+}

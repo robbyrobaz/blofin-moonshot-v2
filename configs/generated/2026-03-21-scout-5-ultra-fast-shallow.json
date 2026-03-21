@@ -1,0 +1,22 @@
+{
+  "model_type": "lightgbm",
+  "n_estimators": 50,
+  "learning_rate": 0.2,
+  "max_depth": 3,
+  "num_leaves": 31,
+  "neg_class_weight": 3,
+  "confidence_threshold": 0.4,
+  "direction": "short",
+  "feature_set": [
+    "price_vs_52w_high",
+    "momentum_4w",
+    "volume_ratio_7d",
+    "atr_percentile",
+    "bb_position",
+    "btc_30d_return",
+    "distance_from_support",
+    "consec_down_bars",
+    "higher_highs",
+    "days_since_listing"
+  ]
+}
