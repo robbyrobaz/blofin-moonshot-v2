@@ -148,6 +148,33 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 - **RULE: Research first, understand the state, THEN act. Not the other way around.**
 - **RULE: One process per external API at a time. Period.**
 
+## OHLCV Backfill Architecture (Mar 21 2026)
+
+### Three-Source Parallel Backfill
+- **Blofin API:** 1,440 candles/req, 0.3 req/sec safe rate, ~5 days for 473 symbols
+- **Binance.US:** 1,000 candles/req, **1 weight per klines request**, limit 1,200 weight/min → 16 req/sec safe, ~4h for 146 symbols
+- **OKX:** 300 candles/req (history-candles endpoint), 3 req/sec safe, ~20h for 136 symbols
+- All three run in parallel (different APIs, no conflict)
+- All output to same dir/schema: `/mnt/data/blofin_ohlcv/1m/{SYMBOL}.parquet`
+- Scripts skip existing files (safe to restart)
+
+### Rate Limit Reference
+- **Blofin:** Undocumented sliding window, triggers 429 with `Retry-After` header after sustained load. ~0.3 req/sec safe.
+- **Binance.US:** 1,200 weight/min, klines = 1 weight. 6,100 raw requests/5min. 429 → escalating IP bans (2min → 3 DAYS). Check `x-mbx-used-weight-1m` header.
+- **OKX:** No documented limit found, tested 3.8 req/sec sustained with 0 errors.
+- **Binance.com (fapi):** BLOCKED from this server (451 geo-restricted)
+- **Bybit:** BLOCKED from this server (403)
+
+### Data Validation
+- Script: `scripts/validate_ohlcv_data.py`
+- Checks: duplicates, OHLCV sanity (high≥low≥0), gaps, nulls, zero prices, monotonic timestamps
+- Run periodically during backfill and after completion
+
+### Symbol Coverage
+- Binance.US: 146 symbols overlap (format: BTCUSDT → BTC-USDT)
+- OKX: 136 additional (format: BTC-USDT-SWAP → BTC-USDT)
+- Blofin-only: 191 symbols (no alternative source)
+
 ## Lessons
 - Haiku WILL hallucinate if not forced to call APIs explicitly
 - Subagents die on heavy data tasks — multi-GB loads run in main session
