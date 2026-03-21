@@ -55,8 +55,9 @@
 
 **BLOFIN TICK INGESTOR RETIRED** (2026-03-21):
 - ❌ Tick-level data collection KILLED (no proven value, 48% CPU burn, 650GB/month storage)
-- ✅ Archived: `/mnt/data/archive/blofin-tick-ingestor-retired-20260321/` (55GB)
-- 📋 Moving to 1-minute candles via Blofin API (lower cost, same flexibility)
+- ❌ All tick databases DELETED (55GB freed)
+- ✅ 1-min candle data PRESERVED: `/mnt/data/blofin_tickers/raw/` (473 symbols, 3.5GB, 199M rows, Oct 2025-Mar 2026)
+- 💤 1-min data DORMANT (no active pipeline, available for research if hypothesis emerges)
 - Services disabled: blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard
 
 **Services:**
