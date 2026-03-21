@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-20 16:03 MST (Heartbeat — all systems operational)
+> Last updated: 2026-03-20 20:03 MST (Heartbeat — all systems operational)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -51,30 +51,26 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 20 16:03)
+## Current Status (Mar 20 20:03)
 
 **Services:**
 - ✅ blofin-stack-ingestor.service (active)
 - ✅ blofin-stack-paper.service (active)
 - ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (next fire: 20:05 MST — between 4h cycles)
+- ✅ moonshot-v2.timer (normal — between 4h cycles)
 
 **Tournament:**
-- Champions: 2 active
-- FT models: 549
 - Open positions: 942
-- Last run: #159
 - Cycle status: NO CYCLE RUNNING (normal between timer fires)
 
 **Blofin v1:**
 - ✅ All services active
 - Dashboard HTTP 200 on 8892
-- Top FT performers: DOT-reversal +5.04% (3 trades, PF 5.06, tier 2), LINK-reversal +4.04% (3 trades, PF 3.99, tier 2)
+- Top FT performers: Schema check required (sqlite3 not found)
 
 **Backfill:**
-- Historical 1min backfill: running (started Mar 19, ~20h elapsed)
-- SPY IBKR backfill: running (started 14:47 today)
+- Historical 1min backfill: running (PID 1312047, started Mar 19, ~51h CPU time, normal)
 
 **Git:**
 - moonshot: clean, 0 unpushed commits
