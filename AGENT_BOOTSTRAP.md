@@ -51,7 +51,7 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 21 06:37)
+## Current Status (Mar 21 08:03)
 
 **BLOFIN TICK INGESTOR RETIRED** (2026-03-21):
 - ❌ Tick-level data collection KILLED (no proven value, 48% CPU burn, 650GB/month storage)
@@ -65,24 +65,22 @@
 - ❌ blofin-stack-paper.service (RETIRED)
 - ❌ blofin-dashboard.service (RETIRED, was port 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (idle — no cycle running, next at 08:05 MST)
+- ✅ moonshot-v2.timer (idle — no cycle running, next at 12:05 MST)
 
 **Tournament:**
-- Champion: new_listing (rule-based)
+- Champions: 2 (short + new_listing)
 - FT Backlog: 0
 - Open positions: 942
 
 **Blofin v1:**
-- ✅ All services active
-- Dashboard HTTP 200 on 8892
-- Top 5 FT performers: reversal/DOT-USDT (PF=5.06), reversal/LINK-USDT (PF=3.99), bb_squeeze/ADA-USDT (PF=2.61), bb_squeeze/BTC-USDT (PF=2.34), reversal/AVAX-USDT (PF=1.59)
+- ❌ All services RETIRED (Mar 21)
 
-**Backfill:**
-- No backfill process running
+**Candle Data:**
+- 938,207 rows across 472 symbols in DB
+- Coverage: Oct 2025 - Mar 2026
 
 **Git:**
 - moonshot: clean, 0 unpushed commits
-- blofin-stack: clean, 7 unpushed commits (<25 threshold, OK)
 
 ## Moonshot v2 — Tournament Status
 
@@ -96,9 +94,8 @@
 | Stage | Count |
 |-------|-------|
 | Champion | 2 (short/new_listing) |
-| Forward Test | 453 |
-| Backtest | 3 |
-| Retired | 1,866 |
+| Forward Test | 587 |
+| Retired | 2,170 |
 
 ### Direction-Specific Gates (Mar 14 2026)
 - SHORT: PF ≥ 1.0, precision ≥ 0.20, bootstrap CI ≥ 0.8
@@ -111,9 +108,9 @@
 - Dashboard: http://127.0.0.1:8893/
 
 ### Cycle Performance
-- Last successful cycle: 143 (Mar 18 01:15, 71min runtime)
-- Last killed cycle: 126 (Mar 16 16:25, hung 37h, killed Mar 18 05:43)
-- Current cycle: NONE (next at 12:05)
+- Last cycle: Unknown (dashboard accessible, DB healthy)
+- Current cycle: NONE (next at 12:05 MST)
+- Tournament stable: 95.8% retirement rate, 2 champions
 
 ## Blofin v1 Stack
 
