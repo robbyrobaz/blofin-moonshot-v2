@@ -144,12 +144,13 @@ Full report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
 - **LONG Champion:** NONE (all LONG models unprofitable by design)
 - **New Listing:** new_listing (rule-based), FT_trades=0 — waiting for next ≤7 day coin
 
-### Tournament Numbers
+### Tournament Numbers (Mar 21 16:03)
 | Stage | Count |
 |-------|-------|
-| Champion | 2 (short/new_listing) |
-| Forward Test | 587 |
-| Retired | 2,170 |
+| Champion | 1 (new_listing) |
+| Forward Test | Unknown |
+| Open Positions | 942 |
+| FT Backlog | 0 |
 
 ### Direction-Specific Gates (Mar 14 2026)
 - SHORT: PF ≥ 1.0, precision ≥ 0.20, bootstrap CI ≥ 0.8
