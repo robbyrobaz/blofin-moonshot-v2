@@ -74,12 +74,19 @@
 ### Blofin v1 Pipeline Status
 - ❌ Tick ingestor RETIRED (no proven value, 48% CPU, 650GB/mo)
 - ❌ All tick databases DELETED (55GB freed)
-- ❌ blofin_monitor.db was CORRUPTED then replaced with empty DB
-- ✅ blofin-dashboard.service RUNNING (port 8892) — but showing empty data (DB is fresh)
-- ❌ blofin-stack-ingestor.service DISABLED
-- ❌ blofin-stack-paper.service DISABLED
+- ✅ blofin-dashboard.service RUNNING (port 8892) — DB has restored strategy data but no live trades yet
+- ❌ blofin-stack-ingestor.service DISABLED (needs new 1-min candle poller, not built yet)
+- ❌ blofin-stack-paper.service DISABLED (code updated, waiting for backfill to complete)
 - ✅ Strategy code + ML models intact in git
 - ✅ Strategy recovery report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
+
+### Code Changes Deployed (Mar 21 10:13 — commit e9bd5bc):
+- ✅ DuckDB adapter reads OHLCV from `/mnt/data/blofin_ohlcv/1m/` (falls back to old tickers)
+- ✅ Backtester reads pre-aggregated 1-min OHLCV directly (no tick aggregation)
+- ✅ **Per-coin BT gate fix deployed** — paper engine will ONLY trade tier≥2 symbols (was trading 320+ untested)
+- ✅ Paper engine unchanged (adapter handles data mapping)
+- ✅ All 60+ strategies compatible with OHLCV candles (no changes needed)
+- 📋 Ref: `blofin-stack/TASK_COMPLETION_OHLCV_MIGRATION.md`
 
 ### What Blofin v1 Found (PROFITABLE — don't dismiss!)
 Top performers from Mar 1 report (20+ FT trades each):
@@ -90,10 +97,18 @@ Top performers from Mar 1 report (20+ FT trades each):
 Full report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
 
 ### Recovery Plan
-1. ⏳ OHLCV backfill running (proper OHLCV 1-min candles from API)
-2. ⏸️ Once backfill complete: re-run backtests to rediscover winning strategies
-3. ⏸️ Then: rebuild paper trading pipeline on 1-min candles (not ticks)
-4. ⏸️ Then: rebuild FT metrics + dashboard
+1. ⏳ OHLCV backfill running (proper OHLCV 1-min candles from API) — 17/473 symbols, ~3+ days remaining
+2. ✅ Pipeline code updated for OHLCV (adapter, backtester, eligibility) — commit e9bd5bc
+3. ⏸️ Once backfill has enough symbols: run backtests to rediscover winning strategies
+4. ⏸️ Build new 1-min candle poller (replaces tick ingestor) for live data
+5. ⏸️ Start paper engine → accumulate FT trades → dashboard shows winners
+6. ⏸️ Key plans: `brain/DATA_ARCHITECTURE_FINAL.md`, `docs/FT_PIPELINE_DIAGNOSIS_2026_03_16.md`
+
+### ⚠️ Backfill Script Needs Fix
+- Script: `blofin-stack/scripts/ohlcv_backfill_v2.py`
+- **PROBLEM:** Output not logging to file (can't tail progress) — MUST fix with proper logging
+- Log should go to `/tmp/ohlcv_backfill.log` or similar, viewable with `tail -f`
+- Fix at next good stopping point (don't kill mid-symbol)
 
 ### Data Inventory
 - `/mnt/data/blofin_ohlcv/1m/` — NEW proper OHLCV parquet (backfill in progress)

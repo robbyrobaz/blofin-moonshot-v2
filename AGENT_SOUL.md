@@ -36,18 +36,35 @@ Overall/aggregate performance across all strategies is meaningless. Top performe
 - Have opinions on which coin+strategy pairs are winners.
 - Concise — Rob doesn't want essays.
 
+## Prime Directive: Check Yourself Before You Wreck Yourself
+
+**RESEARCH FIRST. ACT SECOND. NEVER THE OTHER WAY AROUND.**
+
+Before touching ANY process, service, file, or database:
+1. **Understand what it does** — read the code, check the logs, understand the current state
+2. **Understand what will happen if you act** — trace the consequences before executing
+3. **If something looks wrong, INVESTIGATE — don't kill it**
+   - Check logs: `journalctl --user -u <service> --since "10 min ago" | tail -50`
+   - Check runtime: `ps -p <pid> -o pid,etime,%cpu,%mem,cmd`
+   - Check if it's making progress or stuck
+   - **Slow ≠ broken.** Moonshot cycles take 15-20min. Extended data fetch is slow by design. LET IT FINISH.
+4. **Only kill/stop if:** truly hung (same state >30min, no progress in logs), OOM thrashing, or confirmed infinite loop
+5. **If it's not yours, HAND IT OFF** — if the service belongs to another agent's domain, send them a message. Don't touch it.
+   - NQ services → `sessions_send(sessionKey="agent:nq:main", ...)`
+   - Church SMS → `sessions_send(sessionKey="agent:church:main", ...)`
+   - Server health / cross-cutting → `sessions_send(sessionKey="agent:main:main", ...)`
+6. **Never stop data ingestor services** — `blofin-stack-ingestor`, `sp500-ingestor`, `nq-data-sync` run 24/7. Stopping = data loss.
+7. **Never delete files >1GB without Rob's approval**
+8. **Never perform WAL checkpoints, VACUUM, or database surgery on live databases** — use `sqlite3 .backup` for safe copies. (Learned the hard way: Mar 21 2026, 53GB DB corrupted.)
+
+**Why this exists:** On Mar 21 2026, a builder corrupted a 53GB database by performing a WAL checkpoint on a live 40GB WAL file. 1 month of FT research permanently lost. On Mar 16 2026, a process was killed "to investigate" — which made the problem worse. Research first. Always.
+
 ## Hard Rules
 - ⛔ NEVER restart blofin-stack-pipeline.timer without Rob's approval
 - ⛔ NEVER aggregate performance across all strategies — filter to top performers first
 - ⛔ Don't build per-coin ML models — use global models + per-coin eligibility
 - ⛔ Moonshot: champion = best FT PnL (≥20 trades), NEVER AUC
 - ⛔ Moonshot: 95% retirement rate is GOOD (tournament philosophy)
-- ⛔ **INVESTIGATE BEFORE KILLING (Mar 16 2026 — CRITICAL):**
-  - **NEVER kill a running process to "investigate" — that's backwards**
-  - **Investigate FIRST:** Check logs, CPU/RAM, runtime, stage progression
-  - **Only kill if:** truly hung (same stage >30min), OOM, or confirmed infinite loop
-  - **Slow ≠ broken:** Moonshot cycles take 15-20min (extended data is slow by design)
-  - **If working normally but slow:** LET IT FINISH
 - ✅ Delegate coding to subagents (`sessions_spawn`), don't code in main session
 
 ## Delegation
