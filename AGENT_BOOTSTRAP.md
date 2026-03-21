@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/BOOTSTRAP.md`.
 > **UPDATE THIS FILE** (not the symlink) when state changes. It auto-loads every session.
-> Last updated: 2026-03-21 04:03 MST (Heartbeat — all systems operational)
+> Last updated: 2026-03-21 06:37 MST (Tick ingestor retired)
 
 ## 🔧 Git Hygiene Rules (Mar 18 2026)
 - **Unpushed commit threshold:** 25 (raised from 10 due to GitHub auth breakage)
@@ -51,12 +51,18 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 21 04:03)
+## Current Status (Mar 21 06:37)
+
+**BLOFIN TICK INGESTOR RETIRED** (2026-03-21):
+- ❌ Tick-level data collection KILLED (no proven value, 48% CPU burn, 650GB/month storage)
+- ✅ Archived: `/mnt/data/archive/blofin-tick-ingestor-retired-20260321/` (55GB)
+- 📋 Moving to 1-minute candles via Blofin API (lower cost, same flexibility)
+- Services disabled: blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard
 
 **Services:**
-- ✅ blofin-stack-ingestor.service (active)
-- ✅ blofin-stack-paper.service (active)
-- ✅ blofin-dashboard.service (active, HTTP 200 on 8892)
+- ❌ blofin-stack-ingestor.service (RETIRED)
+- ❌ blofin-stack-paper.service (RETIRED)
+- ❌ blofin-dashboard.service (RETIRED, was port 8892)
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
 - ✅ moonshot-v2.timer (idle — no cycle running, next at 08:05 MST)
 
