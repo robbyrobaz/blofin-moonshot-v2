@@ -51,21 +51,60 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 21 08:03)
+## Current Status (Mar 21 09:50 MST)
 
-**BLOFIN TICK INGESTOR RETIRED** (2026-03-21):
-- ❌ Tick-level data collection KILLED (no proven value, 48% CPU burn, 650GB/month storage)
+### 🚨 ACTIVE WORK IN PROGRESS — DO NOT DISRUPT
+
+**1. OHLCV Backfill RUNNING (PID 701299):**
+- Script: `blofin-stack/scripts/ohlcv_backfill_v2.py`
+- Output: `/mnt/data/blofin_ohlcv/1m/{SYMBOL}.parquet`
+- Progress: 16/473 symbols done so far, ~457 remaining
+- Rate: 1 symbol every ~18 min (3-sec delay between API requests)
+- ETA: ~140 hours at current pace (single worker, safe rate)
+- **DO NOT start additional API-hitting processes — will cause 429 rate limits**
+- **DO NOT kill this process — let it run**
+- Check progress: `ls /mnt/data/blofin_ohlcv/1m/ | wc -l` and `ps aux | grep ohlcv`
+
+**2. ADA-USDT test also running (PID 704064) — will finish soon, then v2 has API alone**
+
+**3. Monitoring Cron active:** `Blofin Recovery Monitor` (every 30 min, Opus, webchat)
+- Cron ID: `389c6fbd-d986-4fff-843c-49ffc1bb4d32`
+- Checks backfill progress + reports to Rob
+
+### Blofin v1 Pipeline Status
+- ❌ Tick ingestor RETIRED (no proven value, 48% CPU, 650GB/mo)
 - ❌ All tick databases DELETED (55GB freed)
-- ✅ 1-min candle data PRESERVED: `/mnt/data/blofin_tickers/raw/` (473 symbols, 3.5GB, 199M rows, Oct 2025-Mar 2026)
-- 💤 1-min data DORMANT (no active pipeline, available for research if hypothesis emerges)
-- Services disabled: blofin-stack-ingestor, blofin-stack-paper, blofin-dashboard
+- ❌ blofin_monitor.db was CORRUPTED then replaced with empty DB
+- ✅ blofin-dashboard.service RUNNING (port 8892) — but showing empty data (DB is fresh)
+- ❌ blofin-stack-ingestor.service DISABLED
+- ❌ blofin-stack-paper.service DISABLED
+- ✅ Strategy code + ML models intact in git
+- ✅ Strategy recovery report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
 
-**Services:**
-- ❌ blofin-stack-ingestor.service (RETIRED)
-- ❌ blofin-stack-paper.service (RETIRED)
-- ❌ blofin-dashboard.service (RETIRED, was port 8892)
+### What Blofin v1 Found (PROFITABLE — don't dismiss!)
+Top performers from Mar 1 report (20+ FT trades each):
+- cross_asset_correlation / INJ-USDT: PF 4.41, 26.56% PnL, 5x leverage
+- orderflow_imbalance / AAVE-USDT: PF 3.91, 11.19% PnL, 5x leverage  
+- momentum / JTO-USDT: PF 3.80, 42.42% PnL, 5x leverage
+- cross_asset_correlation / JUP-USDT: PF 3.24, 10.14% PnL, 3x leverage
+Full report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
+
+### Recovery Plan
+1. ⏳ OHLCV backfill running (proper OHLCV 1-min candles from API)
+2. ⏸️ Once backfill complete: re-run backtests to rediscover winning strategies
+3. ⏸️ Then: rebuild paper trading pipeline on 1-min candles (not ticks)
+4. ⏸️ Then: rebuild FT metrics + dashboard
+
+### Data Inventory
+- `/mnt/data/blofin_ohlcv/1m/` — NEW proper OHLCV parquet (backfill in progress)
+- `/mnt/data/blofin_tickers/raw/` — OLD ticker snapshots (last_price only, NOT OHLCV, 3.5GB, 473 symbols)
+- `/mnt/data/blofin_monitor.db` — EMPTY (fresh DB, no historical data)
+
+### Moonshot v2
 - ✅ moonshot-v2-dashboard.service (active, HTTP 200 on 8893)
-- ✅ moonshot-v2.timer (idle — no cycle running, next at 12:05 MST)
+- ✅ moonshot-v2.timer (4h cycle)
+- ✅ Incremental feature computation FIX deployed (64min → <10min cycles)
+- **Timeframe: 4-HOUR candles** (`CANDLE_INTERVAL = "4H"`) — NOT 1-min, NOT ticks
 
 **Tournament:**
 - Champions: 2 (short + new_listing)
