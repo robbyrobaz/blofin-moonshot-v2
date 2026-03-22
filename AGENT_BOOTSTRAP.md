@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORATION
 
-**Last updated:** 2026-03-22 08:03 MST
+**Last updated:** 2026-03-22 12:03 MST
 
 ## 🔧 ACTIVE RESTORATION (Mar 20 Database Loss)
 
@@ -44,17 +44,17 @@
 
 ---
 
-## System Status (as of Mar 22 08:03)
+## System Status (as of Mar 22 12:03)
 - ✅ WebSocket ingestor: blofin-ohlcv-ingestor.service (1-min candles flowing)
 - ✅ Historical data: 467 parquet files, 2.1GB (Binance+OKX complete, Blofin partial)
-- ⏳ Backtest sweep v7: RUNNING (check cron logs for latest % completion)
+- ✅ Backtest sweep v7: COMPLETE (100%, all results saved)
 - ⛔ Paper trading: STOPPED (waiting for backtest completion)
 - ✅ Dashboard: blofin-dashboard.service running (port 8892) — waiting for data
 - ✅ Moonshot v2: HEALTHY, unaffected
 
 ---
 
-## Moonshot v2 — Tournament Status (Mar 22 08:03)
+## Moonshot v2 — Tournament Status (Mar 22 12:03)
 
 ### Champions (2 active)
 - **de44f72dbb01:** FT_PnL=0.68%, 388 trades — HEALTHY ✅
@@ -63,10 +63,10 @@
 ### Tournament Numbers
 | Stage | Count |
 |-------|-------|
-| FT | 643 models |
+| FT | 0 models |
 | Champion | 2 models |
-| Retired | 2,297 models |
-| Open positions | 935 |
+| Retired | 2,941 models |
+| Open positions | 936 |
 
 ---
 
