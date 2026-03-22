@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORATION
 
-**Last updated:** 2026-03-22 03:22 MST (Autonomous Fix Cycle #5)
+**Last updated:** 2026-03-22 04:05 MST (Heartbeat — Hung Cycle Killed)
 
 ## 🔧 ACTIVE RESTORATION (Mar 12 Data Loss)
 
@@ -36,20 +36,27 @@
 
 ---
 
-## Moonshot v2 — Tournament Status (Mar 17 snapshot, unchanged)
+## Moonshot v2 — Tournament Status (Mar 22 04:05)
 
-### Champions (3 active)
-- **SHORT Champion:** de44f72dbb01, FT_PF=2.22, FT_PnL=0.68% — HEALTHY ✅
-- **LONG Champion:** 9b842069b20d, FT_PF=0.22, FT_PnL=-2.01% — needs investigation
+### ⚠️ CRITICAL INCIDENT — 6-Day Hung Cycle
+- **Cycle 126** started Mar 16 16:20, hung at `fetch_all_extended` step
+- **CPU time:** 325+ hours (infinite loop or deadlock)
+- **Action taken:** Killed PID 1968765, restarted service
+- **New cycle:** PID 2089996 started Mar 22 04:05
+
+### Champions (2 active)
+- **SHORT Champion:** de44f72dbb01, FT_PF=2.22, FT_trades=388, FT_PnL=0.68% — HEALTHY ✅
 - **New Listing:** new_listing, FT_trades=0 — waiting
 
 ### Tournament Numbers
 | Stage | Count |
 |-------|-------|
-| Backtest | 32 models |
-| FT | 423 models (393 SHORT, 30 LONG) |
-| Retired | 1,792 models |
-| Open positions | 884 |
+| Backtest | 4 models |
+| Champion | 2 models |
+| FT | 631 models |
+| Retired | 2,280 models |
+| Open positions | 890 |
+| Candles in DB | 472 symbols |
 
 ---
 
