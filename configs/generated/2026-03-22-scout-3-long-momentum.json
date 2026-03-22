@@ -1,0 +1,22 @@
+{
+  "model_type": "catboost",
+  "n_estimators": 200,
+  "learning_rate": 0.06,
+  "max_depth": 6,
+  "num_leaves": 63,
+  "neg_class_weight": 5,
+  "confidence_threshold": 0.52,
+  "direction": "long",
+  "feature_set": [
+    "momentum_4w",
+    "momentum_8w",
+    "volume_spike",
+    "bb_position",
+    "higher_highs",
+    "volume_ratio_7d",
+    "btc_30d_return",
+    "price_vs_52w_high",
+    "volume_trend",
+    "obv_slope"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "model_type": "lightgbm",
+  "n_estimators": 250,
+  "learning_rate": 0.04,
+  "max_depth": 7,
+  "num_leaves": 127,
+  "neg_class_weight": 6,
+  "confidence_threshold": 0.55,
+  "direction": "long",
+  "feature_set": [
+    "days_since_listing",
+    "is_new_listing",
+    "price_change_24h_pct",
+    "vol_24h_vs_7d_avg",
+    "price_vs_24h_high",
+    "price_vs_24h_low",
+    "funding_rate_current",
+    "funding_rate_extreme",
+    "oi_change_24h",
+    "oi_percentile_90d",
+    "volume_spike",
+    "atr_percentile",
+    "high_low_range_pct"
+  ]
+}

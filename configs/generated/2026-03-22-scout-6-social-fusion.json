@@ -1,0 +1,29 @@
+{
+  "model_type": "xgboost",
+  "n_estimators": 240,
+  "learning_rate": 0.045,
+  "max_depth": 7,
+  "num_leaves": 127,
+  "neg_class_weight": 5,
+  "confidence_threshold": 0.53,
+  "direction": "short",
+  "feature_set": [
+    "price_vs_52w_high",
+    "momentum_4w",
+    "volume_spike",
+    "bb_position",
+    "fear_greed_score",
+    "fear_greed_7d_change",
+    "is_coingecko_trending",
+    "trending_rank",
+    "hours_on_trending",
+    "news_mentions_24h",
+    "news_mentions_7d_avg",
+    "news_velocity_ratio",
+    "reddit_mentions_24h",
+    "reddit_score_24h",
+    "reddit_velocity_ratio",
+    "github_commits_7d",
+    "github_commit_spike"
+  ]
+}

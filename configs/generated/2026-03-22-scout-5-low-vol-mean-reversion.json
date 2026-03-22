@@ -1,0 +1,21 @@
+{
+  "model_type": "lightgbm",
+  "n_estimators": 180,
+  "learning_rate": 0.06,
+  "max_depth": 5,
+  "num_leaves": 31,
+  "neg_class_weight": 4,
+  "confidence_threshold": 0.50,
+  "direction": "short",
+  "feature_set": [
+    "bb_position",
+    "atr_compression",
+    "bb_squeeze_pct",
+    "distance_from_support",
+    "distance_from_resistance",
+    "consec_down_bars",
+    "consec_up_bars",
+    "high_low_range_pct",
+    "realized_vol_ratio"
+  ]
+}

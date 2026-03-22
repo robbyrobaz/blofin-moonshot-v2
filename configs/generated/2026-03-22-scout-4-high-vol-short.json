@@ -1,0 +1,21 @@
+{
+  "model_type": "xgboost",
+  "n_estimators": 220,
+  "learning_rate": 0.05,
+  "max_depth": 6,
+  "num_leaves": 63,
+  "neg_class_weight": 7,
+  "confidence_threshold": 0.58,
+  "direction": "short",
+  "feature_set": [
+    "atr_percentile",
+    "realized_vol_ratio",
+    "high_low_range_pct",
+    "funding_rate_extreme",
+    "oi_price_divergence",
+    "price_change_24h_pct",
+    "vol_24h_vs_7d_avg",
+    "atr_compression",
+    "mark_index_spread"
+  ]
+}
