@@ -1,61 +1,37 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORATION
 
-**Last updated:** 2026-03-22 06:42 MST (Autonomous Fix Cycle #10)
+**Last updated:** 2026-03-22 06:57 MST
 
-## 🔧 ACTIVE RESTORATION (Mar 12 Data Loss)
+## 🔧 ACTIVE RESTORATION (Mar 20 Database Loss)
 
-### Current Status ⏳ IN PROGRESS — CRITICAL BUG FIXED
-**RUNNING:** Full backtest sweep v7 (scripts/backtest_sweep_v7_fixed.py) ✅
-- Started: 06:40 MST
-- Progress: 600/28,954 tasks (2.1%, 4.8 tasks/sec)
-- First batch saved: 06:41 ✅ (500 results with REAL pnl_pct values)
-- ETA: ~8:13 MST (1.5 hours)
-- Strategy: Sequential with INCREMENTAL BATCH SAVES (every 500 results)
+### What Happened
+- Mar 20 2026: Database lost. All code intact in repo.
+- Architecture change: tick data feed → 1-min candle WebSocket (blofin-ohlcv-ingestor.service)
+- OHLCV data restored: 467 parquet files, 2.1GB at /mnt/data/blofin_ohlcv/1m/
+
+### Current Status ⏳ IN PROGRESS
+**RUNNING:** Full backtest sweep v7_fixed (scripts/backtest_sweep_v7_fixed.py)
+- Started: 06:40 MST Mar 22
 - Coverage: 62 strategies × 467 symbols = 28,954 backtests
-- Timeframe: 15m candles, 90 days lookback
+- Writing to: strategy_coin_performance table (NOT strategy_backtest_results)
+- Rate: ~5 tasks/sec, ~90 min total, ETA ~8:10 MST
+- Saves: Batch of 500, 0 errors per batch
+- Cron: Opus 30min check (job 5815c435) monitoring progress + next steps
 
-**CRITICAL BUG FOUND & FIXED (v6 → v7):**
-v6 saved 6,049 rows BUT all had bt_pnl_pct=0.0 (worthless data) because:
-```python
-# v6 BUG: looked for final_capital in wrong dict
-metrics = bt_result.get('metrics', {})
-final_capital = metrics.get('final_capital', 10000.0)  # WRONG! Always returned 10000
-pnl_pct = 0%  # No profit/loss calculated
-
-# v7 FIX: final_capital is in bt_result, NOT metrics
-final_capital = bt_result.get('final_capital', initial_capital)  # CORRECT
-pnl_pct = real values (-6.31%, 2.82%, 3.69%)  # ✅
-```
-
-### Evolution of the Fix (My Mistakes)
-1. **v2 issue:** Multiprocessing workers couldn't handle relative imports (`from .base_strategy`)
-2. **v3 issue:** Tried to fix imports but only loaded 2/62 strategies
-3. **v4 issue:** Sequential execution worked BUT saved results ONLY at the end — 1hr wasted, 0 DB results
-4. **v5 issue:** Added batch saves BUT used wrong schema (column name: `strategy` vs `strategy_name`)
-5. **v6 issue:** Correct schema + batch saves BUT bt_pnl_pct=0.0 for ALL rows (looked for final_capital in wrong dict)
-6. **v7 solution (CURRENT):** CORRECT final_capital extraction + tier calculation using pnl_pct — WORKING with real values
-
-### Lessons Learned
-- **INVESTIGATE BEFORE KILLING:** v4 was working but slow — I killed it prematurely instead of checking if results would eventually save
-- **READ THE ACTUAL SCHEMA:** Production table uses `strategy_name` not `strategy` — wasted 2 versions on schema mismatch
-- **BATCH SAVES ARE NON-OPTIONAL:** 3.5hr runs that only save at the end are worthless if killed or interrupted
-- **VALIDATE OUTPUT DATA:** v6 ran for 50min and claimed "500 results committed" BUT all pnl_pct=0 — should have checked database earlier
-
-### After Backtest Completes
-1. Verify results in database (expect ~1000-2000 strategy/coin pairs passing gates)
-2. Review top performers (PF ≥ 1.35, trades ≥ 100, MDD < 50%)
-3. Start paper trading: `systemctl --user start blofin-stack-paper.service`
-4. Verify dashboard populated: http://127.0.0.1:8892
-5. Monitor for 24h
-6. **ASK ROB** before restarting pipeline timer
+### After Backtest Completes (cron handles this automatically)
+1. Verify results in strategy_coin_performance (expect passing gates: PF ≥ 1.35, trades ≥ 100, MDD < 50%)
+2. Start paper trading: `systemctl --user start blofin-stack-paper.service`
+3. Verify dashboard populated: http://127.0.0.1:8892
+4. Cron self-disables when fully restored
+5. **ASK ROB** before restarting pipeline timer
 
 ---
 
-## System Status (as of Mar 22 04:30)
-- ✅ WebSocket ingestor: blofin-ohlcv-ingestor.service (candles flowing)
+## System Status (as of Mar 22 06:57)
+- ✅ WebSocket ingestor: blofin-ohlcv-ingestor.service (1-min candles flowing)
 - ✅ Historical data: 467 parquet files, 2.1GB
-- ⏳ Backtest sweep: RUNNING (v4, 0.3% complete, ETA 7am)
-- ⛔ Paper trading: STOPPED (waiting for backtest results)
+- ⏳ Backtest sweep v7: RUNNING (~11% complete, 3000+ rows written)
+- ⛔ Paper trading: STOPPED (waiting for backtest completion)
 - ✅ Dashboard: blofin-dashboard.service running (port 8892) — waiting for data
 - ✅ Moonshot v2: HEALTHY, unaffected
 
@@ -79,21 +55,5 @@ pnl_pct = real values (-6.31%, 2.82%, 3.69%)  # ✅
 ---
 
 ## Git Status
-- `blofin-stack`: 3 new files
-  - scripts/backtest_sweep_v2.py (failed multiprocessing)
-  - scripts/backtest_sweep_v3.py (failed imports)
-  - scripts/backtest_sweep_v4.py (RUNNING - sequential solution)
+- `blofin-stack`: multiple sweep script versions (v2-v7) from restoration attempts
 - `blofin-moonshot-v2`: CLEAN
-
----
-
-## Historical Context (Pre-Mar 12)
-
-Blofin v1 was running:
-- 72 strategies across 50+ coins
-- Dynamic tier system (5x/3x/2x/1x leverage based on FT PF)
-- Hourly backtest refresh (blofin-stack-pipeline.timer — STOPPED per Rob's order)
-- Paper trading engine tracking performance
-
-**Mar 12 data loss:** 107GB tick data lost, backtests/FT results cleared.
-**Restoration status:** OHLCV restored (467 symbols), backtest sweep in progress.
