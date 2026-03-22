@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORATION
 
-**Last updated:** 2026-03-22 07:05 MST
+**Last updated:** 2026-03-22 08:03 MST
 
 ## 🔧 ACTIVE RESTORATION (Mar 20 Database Loss)
 
@@ -44,30 +44,29 @@
 
 ---
 
-## System Status (as of Mar 22 07:05)
+## System Status (as of Mar 22 08:03)
 - ✅ WebSocket ingestor: blofin-ohlcv-ingestor.service (1-min candles flowing)
 - ✅ Historical data: 467 parquet files, 2.1GB (Binance+OKX complete, Blofin partial)
-- ⏳ Backtest sweep v7: RUNNING (~15% complete, 4000+ rows written, 127 passing gates)
+- ⏳ Backtest sweep v7: RUNNING (check cron logs for latest % completion)
 - ⛔ Paper trading: STOPPED (waiting for backtest completion)
 - ✅ Dashboard: blofin-dashboard.service running (port 8892) — waiting for data
 - ✅ Moonshot v2: HEALTHY, unaffected
 
 ---
 
-## Moonshot v2 — Tournament Status (Mar 17 snapshot)
+## Moonshot v2 — Tournament Status (Mar 22 08:03)
 
-### Champions (3 active)
-- **SHORT Champion:** de44f72dbb01, FT_PF=2.22, FT_PnL=0.68% — HEALTHY ✅
-- **LONG Champion:** 9b842069b20d, FT_PF=0.22, FT_PnL=-2.01% — needs investigation
-- **New Listing:** new_listing, FT_trades=0 — waiting
+### Champions (2 active)
+- **de44f72dbb01:** FT_PnL=0.68%, 388 trades — HEALTHY ✅
+- **new_listing:** FT_PnL=0.0%, 0 trades — waiting
 
 ### Tournament Numbers
 | Stage | Count |
 |-------|-------|
-| Backtest | 32 models |
-| FT | 423 models (393 SHORT, 30 LONG) |
-| Retired | 1,792 models |
-| Open positions | 884 |
+| FT | 643 models |
+| Champion | 2 models |
+| Retired | 2,297 models |
+| Open positions | 935 |
 
 ---
 
