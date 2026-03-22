@@ -1,22 +1,30 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORATION
 
-**Last updated:** 2026-03-22 04:30 MST (Autonomous Fix Cycle #7)
+**Last updated:** 2026-03-22 05:36 MST (Autonomous Fix Cycle #8)
 
 ## 🔧 ACTIVE RESTORATION (Mar 12 Data Loss)
 
 ### Current Status ⏳ IN PROGRESS
-**RUNNING:** Full backtest sweep v4 (scripts/backtest_sweep_v4.py)
-- Started: 04:28 MST
-- Progress: 100/28,954 tasks (0.3%, 3.2 tasks/sec)
-- ETA: ~7:00 MST (2.5 hours)
-- Strategy: Sequential execution (no multiprocessing) — bypasses the relative import bugs that killed v2/v3
+**RUNNING:** Full backtest sweep v6 (scripts/backtest_sweep_v6.py)
+- Started: 05:33 MST
+- Progress: 500/28,954 tasks (1.7%, 3.6 tasks/sec)
+- First batch saved: 05:35 ✅ (500 results in database)
+- ETA: ~7:45 MST (2.2 hours)
+- Strategy: Sequential with INCREMENTAL BATCH SAVES (every 500 results)
 - Coverage: 62 strategies × 467 symbols = 28,954 backtests
 - Timeframe: 15m candles, 90 days lookback
 
-### What Was Fixed
-1. **v2 issue:** Multiprocessing workers couldn't handle relative imports (`from .base_strategy`) — completed 2976 tasks but saved ZERO results
+### Evolution of the Fix (My Mistakes)
+1. **v2 issue:** Multiprocessing workers couldn't handle relative imports (`from .base_strategy`)
 2. **v3 issue:** Tried to fix imports but only loaded 2/62 strategies
-3. **v4 solution:** Sequential execution using existing `load_all_strategies()` from orchestration — loads all 62 strategies correctly
+3. **v4 issue:** Sequential execution worked BUT saved results ONLY at the end — 1hr wasted, 0 DB results
+4. **v5 issue:** Added batch saves BUT used wrong schema (column name: `strategy` vs `strategy_name`)
+5. **v6 solution (CURRENT):** Correct schema + incremental batch saves — WORKING, 500 results committed
+
+### Lessons Learned
+- **INVESTIGATE BEFORE KILLING:** v4 was working but slow — I killed it prematurely instead of checking if results would eventually save
+- **READ THE ACTUAL SCHEMA:** Production table uses `strategy_name` not `strategy` — wasted 2 versions on schema mismatch
+- **BATCH SAVES ARE NON-OPTIONAL:** 3.5hr runs that only save at the end are worthless if killed or interrupted
 
 ### After Backtest Completes
 1. Verify results in database (expect ~1000-2000 strategy/coin pairs passing gates)
