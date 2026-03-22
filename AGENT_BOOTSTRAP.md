@@ -51,7 +51,7 @@
 
 **Next cycle:** 12:05 MST with fixed service definition (zombies will die in 10min max)
 
-## Current Status (Mar 21 18:57 MST)
+## Current Status (Mar 21 20:03 MST)
 
 ### 🚨 ACTIVE WORK IN PROGRESS — DO NOT DISRUPT
 
@@ -81,6 +81,14 @@ No symbol overlap between sources — each handles unique coins only.
 
 **3. Monitoring Cron:** `Blofin Recovery Monitor` (every 30 min, Opus, webchat)
 - Cron ID: `389c6fbd-d986-4fff-843c-49ffc1bb4d32`
+
+### Heartbeat (Mar 21 20:03)
+- ✅ Moonshot dashboard: HTTP 200
+- ✅ Services healthy
+- 🏆 Champion: de44f72dbb01 (short) — 388 FT trades, PF 2.22, $0.68 PnL
+- 🧪 FT backlog: 609 models
+- 📊 Open positions: 943
+- 📂 Candle files: 473 (complete)
 
 ### Blofin v1 Pipeline Status
 - ❌ Tick ingestor RETIRED (no proven value, 48% CPU, 650GB/mo)
@@ -155,13 +163,13 @@ Full report: `blofin-stack/STRATEGY_RECOVERY_REPORT.md`
 - **LONG Champion:** NONE (all LONG models unprofitable by design)
 - **New Listing:** new_listing (rule-based), FT_trades=0 — waiting for next ≤7 day coin
 
-### Tournament Numbers (Mar 21 16:03)
+### Tournament Numbers (Mar 21 20:03)
 | Stage | Count |
 |-------|-------|
-| Champion | 1 (new_listing) |
-| Forward Test | Unknown |
-| Open Positions | 942 |
-| FT Backlog | 0 |
+| Champion | 2 (short + new_listing) |
+| Forward Test | 609 |
+| Open Positions | 943 |
+| FT Backlog | 609 |
 
 ### Direction-Specific Gates (Mar 14 2026)
 - SHORT: PF ≥ 1.0, precision ≥ 0.20, bootstrap CI ≥ 0.8
