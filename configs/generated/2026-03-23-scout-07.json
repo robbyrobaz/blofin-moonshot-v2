@@ -1,0 +1,10 @@
+{
+  "model_type": "xgboost",
+  "direction": "short",
+  "feature_set": "all",
+  "learning_rate": 0.02,
+  "max_depth": 9,
+  "n_estimators": 80,
+  "neg_class_weight": 6,
+  "confidence_threshold": 0.65
+}

@@ -1,0 +1,11 @@
+{
+  "model_type": "catboost",
+  "direction": "short",
+  "feature_set": "all",
+  "learning_rate": 0.05,
+  "max_depth": 8,
+  "n_estimators": 50,
+  "neg_class_weight": 8,
+  "num_leaves": 63,
+  "confidence_threshold": 0.75
+}

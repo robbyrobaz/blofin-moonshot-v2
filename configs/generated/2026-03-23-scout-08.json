@@ -1,0 +1,11 @@
+{
+  "model_type": "lightgbm",
+  "direction": "short",
+  "feature_set": "no_social",
+  "learning_rate": 0.025,
+  "max_depth": 7,
+  "n_estimators": 100,
+  "neg_class_weight": 9,
+  "num_leaves": 63,
+  "confidence_threshold": 0.70
+}
