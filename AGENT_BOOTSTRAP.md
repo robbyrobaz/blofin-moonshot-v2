@@ -1,8 +1,8 @@
 # Crypto Agent Bootstrap
 
-**Last updated:** 2026-03-22 16:03 MST
+**Last updated:** 2026-03-22 17:22 MST
 
-## ✅ BLOFIN V1 — RESTORED (Mar 22, 2026)
+## ✅ BLOFIN V1 — OPERATIONAL
 
 ### Restoration Summary (Mar 20-22)
 - Mar 20: Database lost. Architecture changed: tick data → 1-min OHLCV candles via WebSocket.
