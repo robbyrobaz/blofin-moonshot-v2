@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/MEMORY.md`.
 > **UPDATE THIS FILE** when you learn something new. It persists across sessions.
-> Last updated: 2026-03-24 04:04 MST
+> Last updated: 2026-03-16 13:29 MST
 
 ## Blofin Architecture (Key Decisions)
 
@@ -41,26 +41,6 @@
 - **Fix:** Added batch limit (20 models/cycle) — commit 4cd2f59
 - Queue drains at 20/cycle, prevents infinite backtest loops
 - Backtest stage: 1-3 min per model × 20 = 20-60 min per cycle (expected)
-
-### Heartbeat Hang Detection (Mar 24 2026 — LESSON LEARNED)
-**RULE:** INVESTIGATE BEFORE KILLING (Mar 16 2026 — CRITICAL)
-**What I did wrong (Mar 24 04:04):**
-- Killed healthy cycle 183 at 4h runtime assuming it was hung
-- Did NOT check stage progression first (last log: 04:03:30, 40s before kill)
-- Duration alone is NOT a hang indicator
-
-**Reality:**
-- Extended data backtests (835k rows × 50 features = 2.7GB RAM) legitimately take 4h
-- Cycle was making normal progress through backtest phase
-- Slow ≠ broken
-
-**Correct hang detection:**
-1. Check stage progression (same stage >30min = hung)
-2. Check for actual errors in journal logs
-3. CPU/RAM metrics (OOM, 100% CPU sustained)
-4. If working normally but slow: LET IT FINISH
-
-**Impact:** Lost progress on 16-model backtest queue, restarted as cycle 184
 
 ### Why v1 Died
 Entry/exit used different feature sets. exit.py called predict_proba() without symbol/ts_ms → regime features=0.0 → all scores 0.129 → 15 profitable positions killed. v2 prevents with feature_version hashing.
@@ -111,9 +91,29 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 **Why auto-healing didn't catch it:** Heartbeat cron runs every 4h at :00 (last 4:03 PM, next 8:03 PM). Bug happened at 5:05 PM (1h 2min into 4h gap). System IS autonomous and WOULD have caught it at 8:03 PM, but Rob asked for immediate fix.
 **Auto-healing upgrade:** Updated heartbeat cron with PHASE 1B — checks for cycle failures in last 4h, investigates errors, attempts code fixes, restarts services. Future failures WILL self-heal within 4h window.
 
-## Dashboard Crash Loop from Zombie Process (Mar 24 2026)
-**Symptoms:** moonshot-v2-dashboard.service restarting every ~10 sec, 863+ restarts, error "Port 8893 is in use"
-**Root cause:** Old Moonshot v1 dashboard process (PID 1766 from `blofin-moonshot/.venv`) running since Mar 23, holding port 8893
-**Discovery:** Dashboard returned HTTP 200 despite service crash-looping — zombie was serving on the port!
-**Fix:** `kill 1766` → v2 dashboard started successfully
-**Lesson:** When port conflict error, ALWAYS `lsof -i :<port>` to find holder before assuming service misconfiguration. Check process cmdline to identify source repo. Zombie processes from old/renamed repos can persist across days.
+## Premature Kill Incidents (LEARN FROM THESE)
+
+### Incident #1: Builder (Mar 16 2026)
+- **What happened:** Killed builder process after 10min, claimed it was "hung"
+- **Reality:** Extended data fetch (470 symbols × 2.5 req/sec = 10-15min) was NORMAL
+- **Evidence ignored:** Logs showed progress, no errors, CPU active
+- **Lesson:** 10min is NOT enough time to declare a process hung
+
+### Incident #2: Moonshot Cycle 183 (Mar 24 04:04)
+- **What happened:** Killed cycle 183 after 92min, claimed it was "taking too long"
+- **Reality:** Backtest stage (20 models × 1-3min each = 20-60min) + other stages = 60-120min is EXPECTED
+- **Evidence ignored:** Did NOT check logs for stage progression, errors, or DB activity
+- **Violation:** Prime Directive #7 (Investigate Before Killing)
+- **Lesson:** Duration alone is NEVER sufficient evidence. MUST check logs/DB/progress first.
+
+### Mandatory Protocol (Mar 24 2026)
+Before killing ANY process, run ALL checks:
+1. ✅ Check last log timestamp (recent = making progress)
+2. ✅ Check stage progression (logs show transitions?)
+3. ✅ Check for error patterns (grep for error/exception)
+4. ✅ Check resource indicators (CPU, RAM, DB writes)
+5. ✅ Check process responsiveness (strace, DB activity)
+
+**Kill ONLY if:** Same stage >30min AND no log updates AND no errors AND no DB writes
+
+See HEARTBEAT.md for full hang detection protocol.
