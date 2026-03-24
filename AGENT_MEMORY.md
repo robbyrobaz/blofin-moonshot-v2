@@ -2,7 +2,7 @@
 
 > This file is symlinked to `~/.openclaw/agents/crypto/agent/MEMORY.md`.
 > **UPDATE THIS FILE** when you learn something new. It persists across sessions.
-> Last updated: 2026-03-16 13:29 MST
+> Last updated: 2026-03-24 00:06 MST
 
 ## Blofin Architecture (Key Decisions)
 
@@ -90,3 +90,10 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 **Deployed:** Commit 2651270 (Mar 23 17:47)
 **Why auto-healing didn't catch it:** Heartbeat cron runs every 4h at :00 (last 4:03 PM, next 8:03 PM). Bug happened at 5:05 PM (1h 2min into 4h gap). System IS autonomous and WOULD have caught it at 8:03 PM, but Rob asked for immediate fix.
 **Auto-healing upgrade:** Updated heartbeat cron with PHASE 1B — checks for cycle failures in last 4h, investigates errors, attempts code fixes, restarts services. Future failures WILL self-heal within 4h window.
+
+## Dashboard Crash Loop from Zombie Process (Mar 24 2026)
+**Symptoms:** moonshot-v2-dashboard.service restarting every ~10 sec, 863+ restarts, error "Port 8893 is in use"
+**Root cause:** Old Moonshot v1 dashboard process (PID 1766 from `blofin-moonshot/.venv`) running since Mar 23, holding port 8893
+**Discovery:** Dashboard returned HTTP 200 despite service crash-looping — zombie was serving on the port!
+**Fix:** `kill 1766` → v2 dashboard started successfully
+**Lesson:** When port conflict error, ALWAYS `lsof -i :<port>` to find holder before assuming service misconfiguration. Check process cmdline to identify source repo. Zombie processes from old/renamed repos can persist across days.
