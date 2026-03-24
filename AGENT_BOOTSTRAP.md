@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-24 08:03 MST (AUTO)
+**Last updated:** 2026-03-24 12:03 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -9,7 +9,7 @@
 - ✅ 30 active strategies, 14,273 tradeable pairs
 - ✅ Dashboard: http://127.0.0.1:8892
 - ⛔ Pipeline timer: STOPPED (crashes/hangs — needs investigation)
-- ✅ WebSocket ingestor: blofin-ohlcv-ingestor.service (candles flowing)
+- ⛔ WebSocket ingestor: RETIRED (Mar 21) — 1-min candles only
 
 ### What Was Fixed (Mar 22 17:20)
 **Problem:** Pipeline hung after backtest phase, never populated `strategy_registry`
@@ -42,10 +42,12 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 24 08:03 MST)
-- ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY
-- ✅ 940 open positions, 1 active champion
+### Current Status (Mar 24 12:03 MST)
+- ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
+- ✅ 940 open positions, 2 champions (1 active: de44f72dbb01)
+- ✅ 749 forward test models, 2,541 retired (95% retirement rate — GOOD)
 - ✅ No cycle running (idle between 4h timer triggers)
+- ✅ 1 ERROR in last 4h (normal), no feature shape mismatch errors
 - ⚠️ **PREMATURE KILL INCIDENT LOG:**
   - Mar 24 04:04: Killed cycle 183 after 92min (was healthy, in backtest stage)
   - Mar 16: Killed builder after 10min (was healthy, extended data fetch)
@@ -58,8 +60,9 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 **Fix:** Modified `forward_test.py` line 168 to fill missing features from `FEATURE_REGISTRY[fn]["neutral"]`
 **Status:** ✅ WORKING — cycles running clean since deploy
 
-### Champions (1 active)
-- **SHORT Champion:** de44f72dbb01, FT_PnL=+0.68% (388 trades) — HEALTHY ✅
+### Champions (2 total, 1 active)
+- **SHORT Champion:** de44f72dbb01, FT_PnL=+0.68% (388 trades), FT_PF=2.22 — HEALTHY ✅
+- **New Listing Placeholder:** new_listing, 0 trades (champion slot reserved)
 
 ---
 
