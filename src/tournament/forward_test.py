@@ -163,15 +163,27 @@ def _check_exit_conditions(db, pos, ts_ms: int, current_price: float) -> str | N
                 model_feature_names = _resolve_feature_names(inv_row["feature_set"])
 
                 # Build feature vector in MODEL's expected order using STORED values
+                # Fill missing features with neutral values from registry (sparse storage)
                 if isinstance(feature_values_dict, dict):
-                    feature_vector = [feature_values_dict.get(fn) for fn in model_feature_names]
+                    feature_vector = []
+                    for fn in model_feature_names:
+                        val = feature_values_dict.get(fn)
+                        if val is None:
+                            # Missing feature — use neutral value from registry
+                            reg = FEATURE_REGISTRY.get(fn)
+                            if reg and "neutral" in reg:
+                                val = reg["neutral"]
+                            else:
+                                val = 0.0  # Fallback for features without registry entry
+                        feature_vector.append(val)
                 else:
                     # Legacy format: assume entry_features are in correct order
                     feature_vector = list(feature_values_dict)
 
-                # Skip if any features are missing
-                if any(v is None for v in feature_vector):
-                    log.warning("FT invalidation: missing features for pos %d, skipping", pos["id"])
+                # Validate feature count matches model expectation
+                if len(feature_vector) != len(model_feature_names):
+                    log.warning("FT invalidation: feature count mismatch for pos %d (expected %d, got %d), skipping",
+                                pos["id"], len(model_feature_names), len(feature_vector))
                 else:
                     # Load model and re-score with stored features
                     model = _load_model(pos["model_id"])
