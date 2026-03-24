@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-24 12:03 MST (AUTO)
+**Last updated:** 2026-03-24 16:14 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -42,18 +42,27 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 24 12:03 MST)
+### Current Status (Mar 24 16:14 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 940 open positions, 2 champions (1 active: de44f72dbb01)
-- ✅ 749 forward test models, 2,541 retired (95% retirement rate — GOOD)
+- ✅ 17 open champion positions, 2 champions (1 active: de44f72dbb01)
+- ✅ 757 forward test models, 2,558 retired (95% retirement rate — GOOD)
 - ✅ No cycle running (idle between 4h timer triggers)
-- ✅ 1 ERROR in last 4h (normal), no feature shape mismatch errors
+- ✅ 3 ERRORs in last 4h (1 feature shape mismatch + 1 extended data timeout — AUTO-FIXED)
 - ⚠️ **PREMATURE KILL INCIDENT LOG:**
   - Mar 24 04:04: Killed cycle 183 after 92min (was healthy, in backtest stage)
   - Mar 16: Killed builder after 10min (was healthy, extended data fetch)
   - **Fix deployed:** Hang detection protocol in HEARTBEAT.md (require same stage >30min + no log updates)
 
-### Critical Fix Deployed (Mar 23 17:47)
+### Recent Fixes
+
+#### Mar 24 16:14 — FT Scoring Shape Mismatch (AUTO-FIXED)
+**Bug:** `_get_feature_values()` returned `None` when features missing from sparse storage instead of using neutral values
+**Error:** "Feature shape mismatch, expected: 25, got 5" during FT scoring
+**Impact:** Cycle 186 failed at 15:31, FT scoring aborted
+**Fix:** Modified `forward_test.py` to use `FEATURE_REGISTRY[fn]["neutral"]` for missing features (commit 075e836)
+**Status:** ✅ FIXED — pushed to feature/moonshot-2x-leverage
+
+#### Mar 23 17:47 — FT Invalidation Scoring
 **Bug:** FT invalidation scoring failed with "Feature shape mismatch, expected: 25, got 5"
 **Impact:** Cycles crashed every 4h since ~Mar 17
 **Root cause:** Sparse storage in `entry_features` (only 5 changed features stored), but code didn't fill missing features with neutral values
