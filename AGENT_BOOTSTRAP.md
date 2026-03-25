@@ -42,12 +42,13 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 24 16:14 MST)
+### Current Status (Mar 24 20:06 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 17 open champion positions, 2 champions (1 active: de44f72dbb01)
-- ✅ 757 forward test models, 2,558 retired (95% retirement rate — GOOD)
-- ✅ No cycle running (idle between 4h timer triggers)
-- ✅ 3 ERRORs in last 4h (1 feature shape mismatch + 1 extended data timeout — AUTO-FIXED)
+- ✅ 924 open positions, 2 champions (1 active: de44f72dbb01)
+- ✅ 763 forward test models, 2,577 retired (95% retirement rate — GOOD)
+- ✅ Cycle running (started 20:04, healthy)
+- ✅ 0 ERRORs in last 4h — CLEAN
+- ✅ 1-min candle backfill: 473/468 files (COMPLETE)
 - ⚠️ **PREMATURE KILL INCIDENT LOG:**
   - Mar 24 04:04: Killed cycle 183 after 92min (was healthy, in backtest stage)
   - Mar 16: Killed builder after 10min (was healthy, extended data fetch)
@@ -93,3 +94,4 @@ Blofin v1 was running:
 
 **Mar 12 data loss:** 107GB tick data lost, backtests/FT results cleared.
 **Restoration status:** OHLCV restored, tier data survived, working on metrics restoration for 57 profitable pairs.
+r 57 profitable pairs.
