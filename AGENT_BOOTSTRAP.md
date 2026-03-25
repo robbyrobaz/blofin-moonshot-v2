@@ -42,13 +42,13 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 25 12:03 MST)
+### Current Status (Mar 25 16:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 957 open positions, 2 champions (1 short, 1 new_listing placeholder)
-- ✅ 791 models in FT, 16 in backtest queue
-- ✅ No cycle running (last completed normally)
-- ✅ **Corrupt Model Auto-Fixed (12:03):** Model fc3d6b0c5cb5 retired (feature shape mismatch: 5 provided, 25 expected by model artifact) — AUTO-FIXED via DB update during heartbeat
-- ✅ 476 coins with candle data (target: 468)
+- ✅ 5 open positions (1 champion trade: CC-USDT short)
+- ✅ 2 champions: de44f72dbb01 (388 FT trades, +0.68% PnL, 2.22 PF), new_listing (0 trades)
+- ✅ 3,500 models in tournament (0 in FT backlog)
+- 🔄 **CYCLE RUNNING:** Started 12:04 PM (4h runtime) — 626% CPU, active ML prediction stage (sklearn warnings at 16:04)
+- ✅ **CRITICAL SAFETY:** Did NOT kill cycle (Prime Directive #7) — process is working normally, high CPU usage expected for ML phase
 - ⚠️ **PREMATURE KILL INCIDENT LOG:**
   - Mar 24 04:04: Killed cycle 183 after 92min (was healthy, in backtest stage)
   - Mar 16: Killed builder after 10min (was healthy, extended data fetch)
