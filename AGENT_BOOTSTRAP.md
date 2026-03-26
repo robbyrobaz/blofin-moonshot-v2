@@ -42,18 +42,13 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 26 00:05 MST)
+### Current Status (Mar 26 04:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
 - ✅ 1 active champion: de44f72dbb01 (SHORT, 388 FT trades, +$0.68 PnL, 2.22 PF)
-- ✅ 801 models in FT stage (active)
-- ✅ 58 models in backtest pipeline (backtest/backtest_pending/backtest_queue)
-- 🔄 **CYCLE 195:** Started 00:05:01 (healthy restart after cycle 194 hung)
-- ⚠️ **CYCLE 194 HUNG:** Killed at 00:05 after 4h runtime
-  - Started Mar 25 20:05, last log update 23:50 (25min gap)
-  - Stuck in backtest loop, cycling through models (all failing — normal tournament behavior)
-  - No runs table updates since Mar 22 (last run_id=194, ended 1774458318950)
-  - **Root cause:** Backtest stage hung — excessive runtime (4h) with no DB progress
-  - **Action:** Killed by heartbeat cron, systemd auto-restarted
+- ✅ 821 models in FT stage (active) — up from 801
+- ✅ 879 open positions (paper)
+- ✅ 473 1-min candle files (target 468) ✅
+- 🔄 **CYCLE ACTIVE:** Running backtest stage (last log 03:56:50, healthy progress)
 - ⚠️ **HANG INCIDENT LOG:**
   - Mar 26 00:03: Killed cycle 194 after 4h (truly hung, no DB updates for 72h)
   - Mar 25 20:05: Killed cycle 193 after 4h (systemd timeout, backtest stage)
