@@ -161,6 +161,28 @@ def _compute_momentum_8w(db, symbol, ts_ms, candles):
     return max(-1.0, min(1.0, ret))
 
 
+def _compute_momentum_1d(db, symbol, ts_ms, candles):
+    """24-hour return clipped to [-1, 1]. 4H bars: 24h = 6 bars."""
+    if len(candles) < 2:
+        return None
+    close_now = candles[-1]["close"]
+    idx = max(0, len(candles) - 6)
+    close_then = candles[idx]["close"]
+    ret = _safe_div(close_now - close_then, close_then, 0.0)
+    return max(-1.0, min(1.0, ret))
+
+
+def _compute_momentum_3d(db, symbol, ts_ms, candles):
+    """72-hour return clipped to [-1, 1]. 4H bars: 72h = 18 bars."""
+    if len(candles) < 2:
+        return None
+    close_now = candles[-1]["close"]
+    idx = max(0, len(candles) - 18)
+    close_then = candles[idx]["close"]
+    ret = _safe_div(close_now - close_then, close_then, 0.0)
+    return max(-1.0, min(1.0, ret))
+
+
 def _compute_bb_squeeze_pct(db, symbol, ts_ms, candles):
     """BB width / 20-period SMA of BB width."""
     if len(candles) < 20:

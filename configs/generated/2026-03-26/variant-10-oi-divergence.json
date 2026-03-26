@@ -1,0 +1,26 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "params": {
+    "learning_rate": 0.01,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "neg_class_weight": 8
+  },
+  "feature_set": [
+    "oi_change_24h",
+    "oi_change_7d",
+    "oi_price_divergence",
+    "oi_percentile_90d",
+    "price_change_24h_pct",
+    "momentum_4w",
+    "funding_rate_current",
+    "mark_index_spread",
+    "volume_ratio_7d",
+    "btc_30d_return",
+    "is_new_listing"
+  ],
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "OI-Price Divergence Specialist — OI rising + price falling = short squeeze setup (and vice versa)"
+}

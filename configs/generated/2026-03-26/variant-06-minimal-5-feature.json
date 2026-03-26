@@ -1,0 +1,21 @@
+{
+  "direction": "short",
+  "model_type": "lightgbm",
+  "params": {
+    "learning_rate": 0.01,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "num_leaves": 127,
+    "neg_class_weight": 8
+  },
+  "feature_set": [
+    "price_vs_52w_high",
+    "momentum_8w",
+    "volume_ratio_7d",
+    "bb_position",
+    "btc_30d_return"
+  ],
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Minimal 5-Feature Simplicity Test — Overfitting test: can 5 best features match champion?"
+}

@@ -39,6 +39,22 @@ FEATURE_REGISTRY = {
         "neutral": 0.0,
         "category": "core",
     },
+    "momentum_1d": {
+        "fn": "_compute_momentum_1d",
+        "bars": 6,
+        "sources": ["candles"],
+        "availability": "all",
+        "neutral": 0.0,
+        "category": "core",
+    },
+    "momentum_3d": {
+        "fn": "_compute_momentum_3d",
+        "bars": 18,
+        "sources": ["candles"],
+        "availability": "all",
+        "neutral": 0.0,
+        "category": "core",
+    },
     "bb_squeeze_pct": {
         "fn": "_compute_bb_squeeze_pct",
         "bars": 120,

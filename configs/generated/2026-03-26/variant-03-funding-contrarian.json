@@ -1,0 +1,25 @@
+{
+  "direction": "short",
+  "model_type": "catboost",
+  "params": {
+    "learning_rate": 0.01,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "neg_class_weight": 10
+  },
+  "feature_set": [
+    "funding_rate_current",
+    "funding_rate_7d_avg",
+    "funding_rate_extreme",
+    "oi_price_divergence",
+    "oi_percentile_90d",
+    "price_vs_52w_high",
+    "bb_position",
+    "volume_ratio_3d",
+    "btc_30d_return",
+    "days_since_listing"
+  ],
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Funding Rate Contrarian — Extreme funding rates (>0.1% or <-0.1%) predict reversals"
+}

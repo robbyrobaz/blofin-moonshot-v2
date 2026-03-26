@@ -1,0 +1,27 @@
+{
+  "direction": "short",
+  "model_type": "xgboost",
+  "params": {
+    "learning_rate": 0.01,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "neg_class_weight": 8
+  },
+  "feature_set": [
+    "momentum_1d",
+    "momentum_3d",
+    "bb_position",
+    "volume_spike",
+    "volume_ratio_3d",
+    "atr_percentile",
+    "high_low_range_pct",
+    "price_vs_24h_high",
+    "price_vs_24h_low",
+    "btc_30d_return",
+    "days_since_listing",
+    "is_new_listing"
+  ],
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Short-Term Momentum Hunter — 1-3 day price moves predict next 4H bar better than weekly/monthly trends"
+}

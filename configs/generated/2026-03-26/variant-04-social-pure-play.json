@@ -1,0 +1,30 @@
+{
+  "direction": "long",
+  "model_type": "xgboost",
+  "params": {
+    "learning_rate": 0.01,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "neg_class_weight": 8
+  },
+  "feature_set": [
+    "fear_greed_score",
+    "fear_greed_7d_change",
+    "is_coingecko_trending",
+    "trending_rank",
+    "hours_on_trending",
+    "news_mentions_24h",
+    "news_mentions_7d_avg",
+    "news_velocity_ratio",
+    "reddit_mentions_24h",
+    "reddit_score_24h",
+    "reddit_velocity_ratio",
+    "github_commits_7d",
+    "github_commit_spike",
+    "is_new_listing",
+    "days_since_listing"
+  ],
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Social Momentum Pure Play — Social velocity alone predicts new listing pumps (first social-ONLY model)"
+}

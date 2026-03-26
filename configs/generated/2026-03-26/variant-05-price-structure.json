@@ -1,0 +1,25 @@
+{
+  "direction": "short",
+  "model_type": "lightgbm",
+  "params": {
+    "learning_rate": 0.005,
+    "max_depth": 4,
+    "n_estimators": 100,
+    "num_leaves": 127,
+    "neg_class_weight": 8
+  },
+  "feature_set": [
+    "distance_from_support",
+    "distance_from_resistance",
+    "consec_down_bars",
+    "consec_up_bars",
+    "higher_highs",
+    "bb_position",
+    "price_vs_52w_low",
+    "volume_ratio_7d",
+    "btc_vol_percentile"
+  ],
+  "entry_threshold": 0.50,
+  "invalidation_threshold": 0.30,
+  "description": "Price Structure Mean Reversion — Support/resistance + consecutive bars predict bounces"
+}
