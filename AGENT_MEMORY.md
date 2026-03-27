@@ -82,6 +82,15 @@ Entry/exit used different feature sets. exit.py called predict_proba() without s
 - Update `blofin-moonshot-v2/AGENT_BOOTSTRAP.md` and `AGENT_MEMORY.md` directly
 - These are the files that load at session boot — keep them current!
 
+## Strategy Scout Run (Mar 27 2026)
+- **Automated strategy variant generation:** 10 new models added to backtest queue
+- **Approach:** Tournament analysis → gap identification → variant generation → implementation
+- **Feature gaps targeted:** momentum_1d/3d (short-term), minimal subsets (<15 features), regime-specific, OI divergence
+- **Variants:** Fast scalper, ultra-minimal, high-vol hunter, OI specialist, social contrarian, long breakout, deep tree, balanced weights, volume expert, new listing specialist
+- **Files:** `strategy_ideas/2026-03-27-moonshot.md` (proposal), `configs/generated/2026-03-27-scout-run.json` (configs)
+- **Result:** 10 models with diverse feature sets (5-50 features), mixed XGBoost/LightGBM/CatBoost, 9 short + 1 long
+- **Expected outcome:** 1-2 pass backtest gates (10-20% rate), 0-1 reach profitable FT (tournament philosophy)
+
 ## FT Invalidation Feature Mismatch Bug (Mar 23 2026)
 **Symptoms:** Cycles failed with "Feature shape mismatch, expected: 25, got 5" every 4h since ~Mar 17
 **Root cause:** Sparse storage optimization in `entry_features` — only non-neutral values stored (5 features), but invalidation code didn't fill missing features with registry neutrals
