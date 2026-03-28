@@ -42,20 +42,22 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 27 20:05 MST)
+### Current Status (Mar 28 00:06 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 2 active champions (SHORT champion: +$3.30 / 94 trades + new_listing placeholder)
-- ✅ 787 open positions (paper)
-- ✅ Cycle running (PID 4166671, started 20:04 after systemd timeout)
-- ✅ No errors in last 4h
-- ✅ 473 files in 1-min candle backfill (target 468 — COMPLETE)
-- ⚠️ **SYSTEMD TIMEOUT ISSUE (Mar 27 20:04):**
-  - Cycle 195 killed after 4h (16:04→20:04) by systemd TimeoutStartSec=14400
-  - **NOT A HANG** — cycle was working (backtest folds completing: fold 1 @ 19:05, fold 2 @ 19:46)
-  - CPU time: 16h 34min (4x wall time) — ML work is CPU-intensive
-  - **Action needed:** Increase TimeoutStartSec or optimize cycle performance
-- ⚠️ **HANG INCIDENT LOG:**
-  - **Mar 27 16:04: ZOMBIE PROCESS KILLED** — PID 3010001 hung since Mar 16 16:25 (11 days), last log "fetch_all_extended: starting for 470 symbols"
+- ✅ 1 active champion (SHORT champion: +$3.30 / 94 trades)
+- ✅ 727 open positions (paper)
+- ✅ Cycle 207 running (PID 495270, started 00:06 after hung cycle kill)
+- ✅ 0 backlog models (clean state)
+- ✅ 0 errors in last 4h
+- ⛔ **HUNG CYCLE KILLED (Mar 28 00:06):**
+  - Cycle 206 killed after 16+ hours (Mar 27 08:00 → Mar 28 00:06)
+  - Stuck in backtest stage, last log 23:33 (1.5h before kill)
+  - RSS climbed to 1400MB, grinding through failed model retirements
+  - **CONFIRMED HANG** — no progress >1h, stuck on fold 3 backtests
+  - Service restarted successfully, Cycle 207 healthy
+- ⚠️ **PREVIOUS HANG INCIDENT LOG:**
+  - **Mar 27 20:04:** Killed cycle 195 after 4h (systemd timeout, but was working)
+  - **Mar 27 16:04:** Killed zombie PID 3010001 (hung 11 days since Mar 16)
   - Mar 26 00:03: Killed cycle 194 after 4h (truly hung, no DB updates for 72h)
   - Mar 25 20:05: Killed cycle 193 after 4h (systemd timeout, backtest stage)
   - Mar 24 04:04: Killed cycle 183 after 92min (PREMATURE — was healthy)
