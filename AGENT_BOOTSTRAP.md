@@ -42,19 +42,14 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 28 00:06 MST)
+### Current Status (Mar 28 04:21 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
-- ✅ 1 active champion (SHORT champion: +$3.30 / 94 trades)
-- ✅ 727 open positions (paper)
-- ✅ Cycle 207 running (PID 495270, started 00:06 after hung cycle kill)
+- ✅ 2 active champions (SHORT: +$3.30/94 trades, new_listing placeholder)
+- ✅ 687 open positions (paper)
+- ✅ Cycle running (PID 1057843, started 04:18, 3min runtime — NORMAL)
 - ✅ 0 backlog models (clean state)
 - ✅ 0 errors in last 4h
-- ⛔ **HUNG CYCLE KILLED (Mar 28 00:06):**
-  - Cycle 206 killed after 16+ hours (Mar 27 08:00 → Mar 28 00:06)
-  - Stuck in backtest stage, last log 23:33 (1.5h before kill)
-  - RSS climbed to 1400MB, grinding through failed model retirements
-  - **CONFIRMED HANG** — no progress >1h, stuck on fold 3 backtests
-  - Service restarted successfully, Cycle 207 healthy
+- ✅ 473 coin ticker files backfilled (target: 468)
 - ⚠️ **PREVIOUS HANG INCIDENT LOG:**
   - **Mar 27 20:04:** Killed cycle 195 after 4h (systemd timeout, but was working)
   - **Mar 27 16:04:** Killed zombie PID 3010001 (hung 11 days since Mar 16)
