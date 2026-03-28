@@ -1,0 +1,19 @@
+{
+  "model_type": "lightgbm",
+  "n_estimators": 100,
+  "learning_rate": 0.02,
+  "max_depth": 4,
+  "num_leaves": 127,
+  "neg_class_weight": 5,
+  "confidence_threshold": 0.5,
+  "direction": "short",
+  "feature_set": [
+    "consec_up_bars",
+    "distance_from_resistance",
+    "funding_rate_extreme",
+    "oi_change_24h",
+    "volume_spike",
+    "momentum_1d",
+    "momentum_3d"
+  ]
+}

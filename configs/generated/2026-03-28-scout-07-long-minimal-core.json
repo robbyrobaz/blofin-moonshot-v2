@@ -1,0 +1,16 @@
+{
+  "model_type": "xgboost",
+  "n_estimators": 100,
+  "learning_rate": 0.02,
+  "max_depth": 3,
+  "neg_class_weight": 7,
+  "confidence_threshold": 0.45,
+  "direction": "long",
+  "feature_set": [
+    "price_vs_52w_low",
+    "momentum_4w",
+    "volume_ratio_7d",
+    "atr_percentile",
+    "btc_30d_return"
+  ]
+}

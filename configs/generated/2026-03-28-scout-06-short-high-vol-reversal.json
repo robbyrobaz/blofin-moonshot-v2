@@ -1,0 +1,17 @@
+{
+  "model_type": "xgboost",
+  "n_estimators": 150,
+  "learning_rate": 0.03,
+  "max_depth": 5,
+  "neg_class_weight": 6,
+  "confidence_threshold": 0.55,
+  "direction": "short",
+  "feature_set": [
+    "atr_percentile",
+    "realized_vol_ratio",
+    "high_low_range_pct",
+    "distance_from_resistance",
+    "volume_spike",
+    "momentum_1d"
+  ]
+}

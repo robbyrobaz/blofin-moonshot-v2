@@ -1,0 +1,17 @@
+{
+  "model_type": "xgboost",
+  "n_estimators": 150,
+  "learning_rate": 0.03,
+  "max_depth": 4,
+  "neg_class_weight": 7,
+  "confidence_threshold": 0.5,
+  "direction": "short",
+  "feature_set": [
+    "btc_30d_return",
+    "market_breadth",
+    "momentum_8w",
+    "funding_rate_7d_avg",
+    "oi_percentile_90d",
+    "volume_ratio_7d"
+  ]
+}

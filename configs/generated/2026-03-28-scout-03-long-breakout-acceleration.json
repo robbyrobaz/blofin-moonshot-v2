@@ -1,0 +1,18 @@
+{
+  "model_type": "catboost",
+  "n_estimators": 150,
+  "learning_rate": 0.05,
+  "max_depth": 5,
+  "neg_class_weight": 6,
+  "confidence_threshold": 0.45,
+  "direction": "long",
+  "feature_set": [
+    "higher_highs",
+    "distance_from_resistance",
+    "volume_spike",
+    "volume_ratio_7d",
+    "momentum_4w",
+    "btc_30d_return",
+    "atr_percentile"
+  ]
+}

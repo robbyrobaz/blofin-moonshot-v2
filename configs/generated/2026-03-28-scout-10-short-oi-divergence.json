@@ -1,0 +1,17 @@
+{
+  "model_type": "xgboost",
+  "n_estimators": 150,
+  "learning_rate": 0.025,
+  "max_depth": 4,
+  "neg_class_weight": 8,
+  "confidence_threshold": 0.6,
+  "direction": "short",
+  "feature_set": [
+    "oi_price_divergence",
+    "oi_change_24h",
+    "oi_change_7d",
+    "funding_rate_current",
+    "price_change_24h_pct",
+    "volume_ratio_3d"
+  ]
+}
