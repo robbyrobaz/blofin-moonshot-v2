@@ -1,6 +1,6 @@
 # Crypto Agent Bootstrap — BLOFIN RESTORED
 
-**Last updated:** 2026-03-28 16:04 MST (AUTO)
+**Last updated:** 2026-03-28 20:03 MST (AUTO)
 
 ## ✅ BLOFIN V1 — OPERATIONAL
 
@@ -42,23 +42,20 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 
 ## Moonshot v2 — Tournament Status
 
-### Current Status (Mar 28 16:04 MST)
+### Current Status (Mar 28 20:03 MST)
 - ✅ Dashboard: http://127.0.0.1:8893 — HEALTHY (HTTP 200)
 - ✅ 2 active champions (SHORT: +$3.30/94 trades, new_listing placeholder)
 - ✅ 0 open positions (paper)
-- ✅ Cycle 212 running (restarted 16:04 after killing hung cycle 211)
-- ✅ 1 FT backlog model (champion needs >20 trades)
+- ✅ **Cycle 212 running since 16:04** (4h runtime, actively backtesting models)
+  - Last log: 20:02:53 — backtesting model 4c31380c96cd (SHORT), loaded 841k labels
+  - CPU: 425% (multi-core), Memory: 1.2GB — HEALTHY
+- ✅ Tournament pipeline:
+  - 129 models in backtest phase
+  - 894 models in forward_test phase
+  - 2 champions
+  - 2,937 retired (95% retirement rate is GOOD per tournament philosophy)
 - ✅ 473 active coin pairs (1-min candle data @ /mnt/data/blofin_tickers/raw/)
-- ⚠️ **PREVIOUS HANG INCIDENT LOG:**
-  - **Mar 28 16:04:** Killed cycle 211 after 4h (hung since 12:05, no errors logged) — RESTARTED
-  - **Mar 28 12:05:** Killed cycle 210 after 3.5h (hung at backtest fold 2, silent 5+ min)
-  - **Mar 27 20:04:** Killed cycle 195 after 4h (systemd timeout, but was working)
-  - **Mar 27 16:04:** Killed zombie PID 3010001 (hung 11 days since Mar 16)
-  - Mar 26 00:03: Killed cycle 194 after 4h (truly hung, no DB updates for 72h)
-  - Mar 25 20:05: Killed cycle 193 after 4h (systemd timeout, backtest stage)
-  - Mar 24 04:04: Killed cycle 183 after 92min (PREMATURE — was healthy)
-  - Mar 16: Killed builder after 10min (PREMATURE — was healthy)
-  - **Fix deployed:** Hang detection protocol in HEARTBEAT.md (same stage >30min + no log updates)
+- ⚠️ **HANG PROTOCOL:** Only kill if truly hung (same stage >30min + no logs). Slow ≠ broken.
 
 ### Recent Fixes
 
@@ -86,7 +83,7 @@ WHERE tier >= 2 AND bt_profit_factor >= 1.35;
 - `blofin-stack`: 2 uncommitted changes
   - orchestration/run_backtester.py (loader fix)
   - scripts/backtest_sweep_v2.py (timeout attempts, 15m timeframe)
-- `blofin-moonshot-v2`: CLEAN
+- `blofin-moonshot-v2`: CLEAN (only cycle.lock, untracked)
 
 ---
 
@@ -100,4 +97,3 @@ Blofin v1 was running:
 
 **Mar 12 data loss:** 107GB tick data lost, backtests/FT results cleared.
 **Restoration status:** OHLCV restored, tier data survived, working on metrics restoration for 57 profitable pairs.
-r 57 profitable pairs.
